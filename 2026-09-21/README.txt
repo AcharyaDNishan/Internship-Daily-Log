@@ -9,9 +9,14 @@ Codes:
 8.Sorting without using .Sort
 9.Create an array ans of length 2n where ans[i] == nums[i] and ans[i + n] == nums[i] 
 10.Array Shuffle
-11. Count maximum consecutive number
+11.Count maximum consecutive number
 
 Topics Studied:
 1.Sealed Classes and Interfaces
 2.Annotation Classes
 3.Extensions
+4.Collections
+5.Nulls
+6.Star Projection
+7.Operator Overloading
+8.Generics
