@@ -10,6 +10,13 @@ Codes:
 9.Create an array ans of length 2n where ans[i] == nums[i] and ans[i + n] == nums[i] 
 10.Array Shuffle
 11.Count maximum consecutive number
+12.First and Second Largest in Array
+13.First and Second Smallest in Array
+14.Reverse Array
+15.Left Move By n given number
+16.Push all the Zero to the Back
+17.Majority Number
+
 
 Topics Studied:
 1.Sealed Classes and Interfaces
