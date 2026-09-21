@@ -8,8 +8,8 @@ Codes:
 7.Task Manager using Annotations
 8.Sorting without using .Sort
 9.Create an array ans of length 2n where ans[i] == nums[i] and ans[i + n] == nums[i] 
-
-
+10.Array Shuffle
+11. Count maximum consecutive number
 
 Topics Studied:
 1.Sealed Classes and Interfaces
