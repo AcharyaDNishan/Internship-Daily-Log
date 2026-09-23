@@ -1,0 +1,11 @@
+Anonymous Function
+Anonymous Functions are the predecessors of the Lambda Functions. Anonymous Function is made by removing the name from a regular function definition. An anonymous function is an expression that returns an object of functional type. It does not define a regular function.
+Regular Function:
+fun add1(a: Int, b: Int) = a + b
+Anonymous Function:
+val add2 = fun(a: Int, b: Int): Int {
+    return a + b
+}
+We can use Single Expression and Regular Syntax when we define Anonymous Function. But not Generic Type Parameters and Default Arguements.
+We need to use .invoke() to call a Function Type.
+A Variable type can be inferred because Anonymous Function specify the type of result and Parameter.
