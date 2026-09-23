@@ -1,0 +1,2 @@
+Trailing Lambda
+If we can call a functional type whose Last Parameter is a Functional Type, we can define a Lambda Expression outside the Parenthesis. This feature is called Trailing Lambda.
