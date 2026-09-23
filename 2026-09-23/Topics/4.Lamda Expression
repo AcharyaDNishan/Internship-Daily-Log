@@ -1,0 +1,23 @@
+Lambda Expression
+They are shorter alternative to the Anonymous Functions. They are used to define object that represents Functions.
+An Expression used to create an object representing a function is called functional literals. Both Anonymous Functions and Lambda Expressions are functional Literals.
+Curly Braces are used to define Lambda Expressions. Even an Empty Curly Braces define Lambda Expressions.
+But we have to be carefull as to not use two sets of Curly Bracket as it will create a Lambda Expression that will not be called.Eg:
+fun main(){
+    {
+        print("Hello")
+    }
+}
+In the above given code, the Print will not be executed as it is an Lambda Expression that will never be invoked.
+If Lambda has parameters, we need to separate with ->. We specify Parameter Names and Types before arrow, separate them using Commas and after arrow we specify the function Body.
+Eg:
+fun main() {
+    val printTimes = { text: String, times: Int ->
+        for (i in 1..times) {
+            print(text)
+        }
+    }
+    printTimes("Na", 7) // NaNaNaNaNaNaNa
+    printTimes.invoke("Batman", 2) // BatmanBatman
+}
+If we want to ignore a parameter we can use Underscore instead of it's name.
