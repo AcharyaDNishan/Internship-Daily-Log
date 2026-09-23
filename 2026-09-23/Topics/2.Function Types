@@ -1,0 +1,25 @@
+Function Types:
+Kotlin let's you treat a Function as an Object too. But you will have to know the Type.
+A Function Type tells you what type of Data it can take in and give out.
+Syntax:
+(Input Data Type)->Output Data Type
+There are multiple Function Types:
+1.()->Unit:-Input is nothing and Output is also nothing i.e. No Input is passed and no output is not returned.
+2.(Int)->Unit:-Input is passed but Output is not returned.
+3.(String,String)->Unit:-Takes two Input but doesn't return any Output.
+4.()->Object:-No input is not passed but an Object is Returned.
+5.(String)->Name:-Input is Passed and an Object is Returned.
+6.(String)->String:-Input is passed and Output is Returned and not object.
+7.(String,String)->String:-Multiple Input is passed and Output is Returned.
+Predicate: (T)->Boolean:-Asks as Yes No Question.
+Transformation: (T)->R:-Converts one data to another object or datatype.
+Operation: (T)->:Does some operation and gives no output.
+A Function Type can be used anywhere you would normally use a datatype and they can also contain other functions.
+Parameter can be fuctions and optional ones. It let's you pass inn Custom Hook for starting or finishing something without any change in Main Code.
+It can be used in Classes and List.
+You can also Nest them inside each other.
+All this shows their flexibility.
+When many parameters are used in a function type, then it suggests a Parameter Name. It places a name before the parameter and separate them using commas. They are not neccesary but are used for Programmers Convinenince.
+Type Alias is used to give a nickname the long Function so that it is easier to call. Using it helps our codes look cleaner. During the Compilation, Kotlin Swaps the Type Alias for function.
+Type Alias is also used when two different function has the same name so we can use it to call them differently and avoid clash.
+All Function types are interfaces. And that is why a class can use it.
