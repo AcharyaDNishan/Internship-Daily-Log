@@ -7,3 +7,4 @@ Topics Covered:
 6.Palindrome
 7.Workout Tracker
 8.Inventory Tracking
+9.Linear Search
