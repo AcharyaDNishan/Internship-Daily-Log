@@ -2,6 +2,8 @@ Lambda Expression
 They are shorter alternative to the Anonymous Functions. They are used to define object that represents Functions.
 An Expression used to create an object representing a function is called functional literals. Both Anonymous Functions and Lambda Expressions are functional Literals.
 Curly Braces are used to define Lambda Expressions. Even an Empty Curly Braces define Lambda Expressions.
+Syntax:
+val name: (ParameterType) -> ReturnType = { parameters -> body }
 But we have to be carefull as to not use two sets of Curly Bracket as it will create a Lambda Expression that will not be called.Eg:
 fun main(){
     {
@@ -21,3 +23,17 @@ fun main() {
     printTimes.invoke("Batman", 2) // BatmanBatman
 }
 If we want to ignore a parameter we can use Underscore instead of it's name.
+Lambda Expression were used to created to minimilistic and implement short functions. Hence instead of return being used in it, the result of last statement is mmentioned.
+Syntax:
+val name = { input ->
+    logic
+    lastValue // automatically returned
+}
+If your Lambda has exactly one parameter, you don't need to name it. You can just use it.
+Syntax:
+val printIt = { number: Int -> println(number) }
+val printIt = { println(it) }
+Closure: Closure is a variable that remembers variable when it is created, even when it is gone.
+Lambda Expression and Anonymous function both create Object Function and are both Equally Efficient.
+Lambda Expression is best for Short, single-line logic or when using "syntactic sugar" (like it or trailing lambdas). It is Concise, supports it keyword, supports trailing lambdas. But it has no explicit return and hence returns the last line automatically. If you need to return early (stop execution), you need a label and it can be confusing if the logic gets complex.
+Anonymous Functions is best for Longer, multi-line logic where clarity is key. It has a explicit return keyword that works naturally without a need of label and return type is required.It also looks like a real function definition.But a lot of code is needed for simple tasks.
