@@ -1,0 +1,25 @@
+Function References
+A Function Reference is a method of passing an already existing function as an argument instead of a new Lambda Everytime.
+Syntax:
+:: (double colon) + function name
+It makes the code shorter, cleaner and more readable.
+Top-Level Function Refers to a standalone function that exist outside any class.
+Syntax:
+::functionName
+Method Reference refers to a function that belongs to an object instance.
+Syntax:
+instance::methodName
+Extension Function Reference refers to a function defined with an extension reciever.
+Syntax:
+receiverType::extensionFunctionName
+Bound Extension Function Reference is used when we want to bind the receiver ahead of time.
+Syntax:
+instance::extensionFunctionName
+Constructor Reference references Class Constructor directly.
+Syntax:
+::ClassName
+Eg:
+val makeZero = ::Complex // Type: (Double, Double) -> Complex
+val z = makeZero(0.0, 0.0)
+println(z) // Complex(real=0.0, imaginary=0.0)
+Function references do not support default parameters directly. If your function has defaults, wrap it in a lambda if you need them.
