@@ -1,0 +1,2 @@
+Functional Programming:
+Kotlin has many features that are needed for Functional Programming. Such as treating Functions as Object, Higher Order Function, Data Immutability, Expressions, Lazy Evaluations, Pattern Matching and Recursive Function Call. Kotlin was to an extent designed to support Functional Language. But it doesn’t support all Functional Feature. Hence, it is not a complete Functional Programming Language. But users can use External Libraries to use those features.
