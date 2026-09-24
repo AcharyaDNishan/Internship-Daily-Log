@@ -33,3 +33,8 @@
 33. Print by Filtering Name longer than 3 Letters
 34. Print by Filtering Number Divisible by 3
 35. Print by Filtering only Pass Students Name
+36. Double of Number using Map
+37. Square of Number using Map
+38. Uppercase using Map
+39. Add 10 to Element using Map
+40. Discount on all using Map
