@@ -38,3 +38,13 @@
 38. Uppercase using Map
 39. Add 10 to Element using Map
 40. Discount on all using Map
+41. Merge List using Flatten
+42. Flatten String
+43. Flatten List of Names
+44. Flatten in a distinct pattern
+45. Sum using fold
+46. Product using Fold
+47. Add String using fold
+48. Total price after 10% Discount
+49. Finding Largest using Fold
+50. Sum of all Primme Using Fold
