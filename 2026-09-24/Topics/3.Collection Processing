@@ -155,7 +155,7 @@ Syntax:
 collection.reversed()
 
 sortDescending- Sorts in Descending order.
-syntax:
+syntax
 collection.sortDescending()
 
 shuffled - make the order of the Collection random. has Or Null Variant.

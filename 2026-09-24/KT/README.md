@@ -18,3 +18,8 @@
 18. Greeting using Inline
 19. Checking Greater of 2 using Inline
 20. Multiplying 5 to all using Inline
+21. Printing List Element using forEach
+22. Printing Names using forEach
+23. Square of Each Number in a List using forEach
+24. Print Only Even Number using forEach
+25. Greeting using forEach
