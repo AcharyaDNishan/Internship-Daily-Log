@@ -23,3 +23,8 @@
 23. Square of Each Number in a List using forEach
 24. Print Only Even Number using forEach
 25. Greeting using forEach
+26. Print using onEach
+27. Print Names using onEach
+28. Double using onEach
+29. Processing onEach
+30. Print all before Addition onEach
