@@ -1,0 +1,90 @@
+Collection Processing
+Collection processing is working with a Collection using function using Function instead of Collections. This way we don't have to write multiple Loops ands If Staments.
+Kotlin uses Processing Flow to make sure one function does one job.
+Collection Function used in Kotlin:
+forEach - Makes a change or performs an operation for each Item.
+Syntax:
+collection.forEach { element ->
+    // action
+}
+
+onEach - Makes a change or performs an operation for each Item and keeps the List.
+Syntax:
+collection.onEach {element->
+    //action
+}
+
+filter - Removes item that doesn't match the conditions specified.
+Syntax:
+collection.filter { condition }
+
+map - Operation is performed on all the elements of a collection.
+Syntax:
+collection.filter{ operation }
+
+flatmap - map but combines the result.
+Eg:
+val lists = listOf(listOf(1, 2), listOf(3, 4))
+val result = lists.flatMap { it } // [1, 2, 3, 4]
+
+fold - Combine all the elements in the given collection
+val numbers = listOf(1, 2, 3)
+val result = numbers.fold(10) { initial, element -> initial + element } // 16 (10 + 1 + 2 + 3)
+
+reduce - Combine items into one result using the first item
+Eg:
+val numbers = listOf(1, 2, 3)
+val result = numbers.reduce { accumulator, element -> accumulator + element } // 6 (1 + 2 + 3)
+
+sum - add all the elements and returns result
+Syntax:
+collection.sum()
+
+count - counts the item in the Collection
+Syntax:
+collection.count()
+
+any - Returns if at least one item true.
+Eg:
+val numbers = listOf(1, 2, 3)
+val result = numbers.any { it > 2 } // true
+
+all - Return if all the items true.
+Eg:
+val numbers = listOf(1, 2, 3)
+val result = numbers.all { it > 0 } // true
+
+none - Returns if no items true.
+Eg:
+val numbers = listOf(1, 2, 3)
+val result = numbers.none { it > 5 } // true
+
+groupby - Groups items based on one some condition
+Eg:
+val words = listOf("apple", "banana", "apricot")
+val result = words.groupBy { it.first() } // {a=[apple, apricot], b=[banana]}
+
+distinct - Remove duplicates
+Syntax:
+collection.distinct()
+
+sorted - Sort items
+Syntax:
+collection.sorted()
+
+take - Take first items
+Eg:
+val numbers = listOf(1, 2, 3, 4)
+val result = numbers.take(2) // [1, 2]
+
+drop - Skip first items
+Eg:
+val numbers = listOf(1, 2, 3, 4)
+val result = numbers.drop(2) // [3, 4]
+
+joinToString - Convert collection to a string
+Eg:
+val letters = listOf("A", "B", "C")
+val result = letters.joinToString(separator = "-", prefix = "[", postfix = "]") // "[A-B-C]"
+
+
