@@ -28,3 +28,8 @@
 28. Double using onEach
 29. Processing onEach
 30. Print all before Addition onEach
+31. Print by Filtering Even Number
+32. Print by Filtering Number Greater than 20
+33. Print by Filtering Name longer than 3 Letters
+34. Print by Filtering Number Divisible by 3
+35. Print by Filtering only Pass Students Name
