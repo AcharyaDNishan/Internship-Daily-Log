@@ -1,0 +1,11 @@
+Inline Function
+Generally when calling a function creates a Overhead. Overhead is a Memory Allocation. Inline tells the Compiler not to create a Function and instead copy and paste the code directly when used.
+This makes the code run faster. It also allows for a Special Feature called Non-Local Return.
+Non-Local Return: Because the lambda code is pasted inside the caller's function, a return inside the lambda returns from the outer function, not just the lambda.
+Sometimes you can't paste the code everywhere. We need modifiers.
+crossinline:-It pastes the code, but disables non-local return. It is used when using the lambda inside another lambda that isn't inline.
+noinline:-It does not paste the code and treats it as normal object.It is used when passing the lambda as an argument to a non-inline function.
+Java/Kotlin erase generic types at runtime (List<Int> becomes just List). You normally cannot check types or use T::class. reified fixes this by substituting the actual type during compilation.
+Properties with getters/setters are secretly functions. They can also be inlined.
+Inline can't be used everywhere. Because it causes Code Bloat(Copy-pasting large functions makes your app binary huge), an inline function cannot call itself and a public inline function cannot access private/internal members.
+This is because the code gets pasted outside the class. If it used private stuff, the compiler can't find it.
