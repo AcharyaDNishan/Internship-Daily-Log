@@ -10,7 +10,7 @@
 10. Addition using SAM
 11. Even Check using SAM
 12. Greeting Using SAM
-13. Celcius to Farenhite using SAM
+13. Celsius to Fahrenheit using SAM
 14. Check Length of String using SAM
 15. UpperCase using SAM
 16. Addition and Multiplication using Inline
