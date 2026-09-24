@@ -1,0 +1,22 @@
+SAM Interface Support
+Some Programing Language don't support Function Type. So they use a different Interface Method known as Single Abstract Method(SAM).
+SAM Interface is an Interference with one abstract method. This is used in Java too.
+JAVA Eg:
+interface OnClick {
+    void onClick(View view);
+}
+The communication between Java and Kotlin should be messy. But Kotlin coverts Lambda to SAM Interface.
+But there is still a problem. Java needs a real interface to work with. Hence we create a Functional Interference to solve this.
+Syntax:
+fun interface OnClick { ... }
+Android Listeners (Before Kotlin's Magic):
+button.setOnClickListener(new View.OnClickListener() {
+    @Override
+    public void onClick(View v) {
+        Toast.makeText(context, "Clicked!", Toast.LENGTH_SHORT).show();
+    }
+});
+Android Listeners (With Kotlin's SAM Support):
+button.setOnClickListener {
+    Toast.makeText(context, "Clicked!", Toast.LENGTH_SHORT).show()
+}

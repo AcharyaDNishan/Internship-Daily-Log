@@ -7,3 +7,4 @@
 7. Area of Rectangle using Lambda Expression
 8. Check weather given String Begins with A or not using Lambda Expression
 9. Multiply 5 to all element in a List using Lambda Expression and Functional Programming
+10. 
