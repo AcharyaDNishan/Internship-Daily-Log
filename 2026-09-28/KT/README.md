@@ -29,3 +29,7 @@
 29. Check if none failed
 30. Check if no product's price is 0
 31. Group by first letter
+32. Group by Odd and Even
+33. Group by Grade
+34. Group by Length
+35. Remove Duplicatr using Distinct
