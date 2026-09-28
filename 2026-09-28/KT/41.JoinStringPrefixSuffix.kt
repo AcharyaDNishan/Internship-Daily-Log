@@ -6,6 +6,6 @@ fun main(){
         print("Enter Element #${i+1}:")
         list.add(readln())
     }
-    var result=list.joinToString(prefix="[",postfix="]")
+    var result=list.joinToString(prefix="-",postfix="-")
     println("$result")
 }
