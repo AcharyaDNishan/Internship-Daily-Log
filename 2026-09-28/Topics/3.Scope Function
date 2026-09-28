@@ -1,0 +1,113 @@
+Scope functions are small Kotlin functions used to work with an object inside a temporary scope. They help make code shorter and control how the object is accessed inside a lambda. The five commonly called scope functions are 'let', 'also', 'apply', 'with', and 'run'; the book also discusses 'takeIf' and 'takeUnless'. 
+There are 2 questions to ask when choosing a scope function:
+1. How do I access the object?
+it - let, also, takeIf, takeUnless
+this - apply, with, run
+2. What does the function return?
+Result of lambda - let, run, with
+Original object - also, apply
+Nullable object - takeIf, takeUnless
+ 1. 'let': We use 'let' when you want to transform an object or work with a value as 'it'.
+Syntax:
+value.let { it >
+    // work
+}
+value.let {
+    // use it
+}
+Eg:
+val name = "nishan"
+val result = name.let {
+    it.uppercase()
+}
+println(result)
+Output:
+NISHAN
+If 'name' is 'null', the lambda is not executed.
+
+2. 'also':We use 'also' when you want to perform an additional action on an object but keep the original object.
+Syntax
+value.also {
+    // side effect
+}
+Eg:
+val user = User("Nishan")
+val result = user
+    .also {
+        println("User created: ${it.name}")
+    }
+println(result.name)
+
+3. 'takeIf':It returns the object if the condition is true. Otherwise it returns 'null'.
+Syntax:
+value.takeIf {
+    condition
+}
+exists - object
+doesn't exist - null
+4. 'takeUnless':It is the opposite of 'takeIf'. It returns the object when the condition is false.
+Syntax:
+value.takeUnless {
+    condition
+}
+takeIf-keep IF true
+takeUnless-keep UNLESS true
+5. 'apply': We use 'apply' to configure/set up an object. Inside the lambda, the object is 'this'.
+Syntax
+object.apply {
+    property = value
+    property2 = value
+}
+Eg.
+val user = User().apply {
+    name = "Nishan"
+    age = 20
+}
+The result is the same 'User' object.
+
+6. 'with': We use 'with' when you want to work with one object repeatedly. Unlike the other functions, 'with' is not an extension function. The object is passed as an argument.
+
+Syntax:
+with(object) {
+    // use this
+}
+Eg.
+val user = User(
+    name = "Nishan",
+    age = 20
+)
+with(user) {
+    println(name)
+    println(age)
+}
+
+7. 'run': There are two forms of 'run'.
+Toplevel 'run':
+run {
+    // code
+}
+It simply creates a scope and returns the lambda result.
+Eg:
+val result = run {
+    val a = 10
+    val b = 20
+    a + b
+}
+println(result)
+Output:
+30
+
+Object 'run'
+object.run {
+    // this = object
+}
+Eg.
+val result = user.run {
+    "$name is $age years old"
+}
+Here 'this' refers to 'user'.
+
+'let' vs 'also' is a very important pair.
+let - result changes
+also - object stays
+'apply' vs 'also' will both return the original object.
