@@ -33,3 +33,9 @@
 33. Group by Grade
 34. Group by Length
 35. Remove Duplicatr using Distinct
+36. Using Sorted
+37. using Take
+38. Using Drop
+39. Using JoinString
+40. Using JoinString with Separator
+41. Using JoinString with Prefix and Postfix
