@@ -8,4 +8,8 @@
 8. Total of all the items in a Shopping Cart
 9. Sum of all Even Number
 10. Sum og all number greater than 10
-11. 
+11. Count Elements
+12. Count Even Numbers
+13. Count elements that are Greater than 50
+14. Count Element with First A
+15. Count no of Students that passed
