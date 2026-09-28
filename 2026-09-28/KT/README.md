@@ -13,3 +13,9 @@
 13. Count elements that are Greater than 50
 14. Count Element with First A
 15. Count no of Students that passed
+16. Check if any Even
+17. Check if atleast one Greater than 100
+18. Check if any Scored 100
+19. Check if any Start with A
+20. Check if any more than 1000
+21. 
