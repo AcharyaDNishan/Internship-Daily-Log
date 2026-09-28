@@ -28,3 +28,4 @@
 28. Check if none String start with Z
 29. Check if none failed
 30. Check if no product's price is 0
+31. Group by first letter
