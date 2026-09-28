@@ -1,0 +1,47 @@
+DSL means Domainn Specific Language. A DSL is a small Language created inside the Kotlin to perform a specific function. It looks almost like a separate language. DSLs are useful especially for complicated data structures, hierarchical/nested structures and large amounts of configuration/data. They can remove repetitive boilerplate code. 
+The most important feature used to create a Kotlin DSL is Function type with a receiver.  It allows us to write a lambda where an object becomes the implicit `this`.
+Syntax:
+ReceiverType.(ParameterTypes) > ReturnType
+There is no special lambda syntax. Just give the lambda a function type with receiver.
+Eg:
+val myPlus3: String.(String) > String = { other >
+    this + other
+}
+Syntax:
+fun functionName(
+    init: ClassName.() > Unit
+) {
+    ...
+}
+
+This `ClassName.() > Unit` is the core of a simple DSL. 
+Kotlin's `apply` is very useful for DSL builders.
+A DSL can contain nested DSLs. This is called a multilevel/hierarchical DSL. 
+There is a safety problem with nested DSLs.  Kotlin could allow `title` from the outer `Dialog` to be accessed.  instead of something belonging to the button.
+To solve this problem, Kotlin provides:
+@DslMarker
+We normally create our own annotation.Then annotate the DSL classes/functions. Now Kotlin prevents accidental access to outer receivers from inside nested DSL levels.
+This is the basic pattern to remember:
+@DslMarker
+annotation class MyDsl
+@MyDsl
+class Builder {
+    var name = ""
+    fun child(init: Child.() > Unit) {
+        // create child
+    }
+}
+@MyDsl
+class Child {
+    var value = ""
+}
+fun build(init: Builder.() > Unit): Builder {
+    return Builder().apply(init)
+}
+We should use a DSL when you need to represent:
+1. complicated data
+2. hierarchical/nested data
+3. lots of configuration/data
+4. repeated boilerplate structures
+Do not use a DSL just because you can because it will make the code harder to understand, harder to debug, more difficult to create and will be a overkill for simple problems.
+We use a DSL when simpler Kotlin features are not enough. 
