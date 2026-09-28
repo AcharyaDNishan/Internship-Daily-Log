@@ -1,0 +1,38 @@
+Sequence and Iterable are similar but not the same. We could say the only formal difference between them is name. It is a Collection Processing method that works lazily. Normally, Collection Operations are performed immediatly. But Sequence doesn't execute it immediatly. They are operated when the terminal operation need result.
+Syntax:
+val result = collection
+    .asSequence()
+    .filter { condition }
+    .map { transformation }
+    .toList() //Terminal Opperation that actually triggers the processing.
+To create Sequence, we use .asSequence(), val sequence = sequence {yield(value)} and sequenceOf().
+Intermidate Operation are used to return another sequence.
+A terminal operation produces the final result and causes the sequence to be processed. Terminal Operations used are:
+toList()
+toSet()
+count()
+sum()
+find()
+first()
+any()
+all()
+none()
+forEach(),etc
+Intermediate → builds the processing
+Terminal → executes the processing
+Sequence is lazy because it only calculate the necessary things and nothing more.
+It works element by element. Hence it doesn't need to commplete one whole operation before moving to next.
+Four main advantages:
+1. Natural processing order
+Processes elements one by one.
+
+2. Minimum operations
+Only processes as many elements as necessary.
+
+3. Can be infinite
+A sequence does not need a fixed number of elements.
+
+4. Less intermediate collections
+filter() and map() do not create a new collection at every step.
+
+Sequence can be infinite. So we must limit it before we use it for operations. There is also no need for intermidiate collections to be created. This helps with large file. 
