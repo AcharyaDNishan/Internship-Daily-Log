@@ -1,0 +1,191 @@
+A context receiver allows a function to require one or more objects as an implicit context. Instead of passing the object as a normal parameter:
+fun sendNotification(
+    context: LoggingContext,
+    notification: NotificationData
+)
+Then:
+context(LoggingContext)
+fun sendNotification(
+    notification: NotificationData
+)
+Then the function can use members of LoggingContext without receiving it as a normal parameter. The book presents context receivers as a feature for passing implicit receivers into functions.
+
+1. Basic Syntax
+context(TypeName)
+fun functionName() {
+    // use members of TypeName
+}
+Example
+class Foo {
+    fun foo() {
+        println("Foo")
+    }
+}
+
+context(Foo)
+fun callFoo() {
+    foo()
+}
+To call it, Foo must be available as a receiver:
+with(Foo()) {
+    callFoo()
+}
+Output:
+Foo
+
+2. Important: It Is an Implicit Receiver
+With a normal parameter:
+fun callFoo(foo: Foo) {
+    foo.foo()
+}
+We explicitly use:
+foo
+
+With a context receiver:
+context(Foo)
+fun callFoo() {
+    foo()
+}
+The Foo object is available implicitly.
+
+Remember
+Normal parameter - pass object explicitly
+Context receiver - object is available implicitly
+
+3. How to Call It: A context-receiver function cannot simply be called like an extension:
+Foo().callFoo()   // ERROR
+Instead, the required receiver must already be in scope:
+with(Foo()) {
+    callFoo()
+}
+The book explicitly distinguishes this from an extension receiver.
+
+4. Using an Explicit Context Receiver
+When We need to explicitly refer to the context receiver, use its label:
+context(Foo)
+fun callFoo() {
+    this@Foo.foo()
+}
+this @Foo refers to the Foo context receiver.
+
+5. Multiple Context Receivers
+A function can require more than one context.
+Syntax
+context(Type1, Type2)
+fun functionName() {
+    // use both
+}
+Example
+class Foo {
+    fun foo() {
+        print("Foo")
+    }
+}
+class Boo {
+    fun boo() {
+        print("Boo")
+    }
+}
+context(Foo, Boo)
+fun callFooBoo() {
+    foo()
+    boo()
+}
+
+Call it like:
+with(Foo()) {
+    with(Boo()) {
+        callFooBoo()
+    }
+}
+Output:
+FooBoo
+Both Foo and Boo must be available in the current context.
+
+6. Context Receiver vs Extension Function
+This is one of the main reasons the chapter introduces context receivers.
+Suppose we have:
+fun HtmlBuilder.standardHead() {
+    head {
+        title = "My website"
+    }
+}
+This makes standardHead() an extension function on HtmlBuilder. But perhaps we don't really want to say:
+standardHead belongs to HtmlBuilder
+We only need HtmlBuilder as a context. So we can write:
+context(HtmlBuilder)
+fun standardHead() {
+    head {
+        title = "My website"
+    }
+}
+Then:
+html {
+    standardHead()
+}
+
+7. Context Receivers with DSL
+This is one of their main use cases. For example:
+context(HtmlBuilder)
+fun standardHead() {
+    head {
+        title = "My website"
+        css("Some CSS")
+    }
+}
+Then:
+val html = html {
+    standardHead()
+
+    body {
+        h1("Title")
+    }
+}
+
+8. Context Receiver + Extension Function
+A context receiver can work together with an extension receiver.
+context(CoroutineScope)
+fun <T> Flow<T>.launchFlow(): Job =
+    this@CoroutineScope.launch {
+        collect()
+    }
+Here there are two different receivers:
+coroutineScope {
+    flowOf(1, 2, 3)
+        .launchFlow()
+}
+So the function can be an extension on Flow<T> while requiring CoroutineScope as its context.
+
+9. Context Receiver for External Services
+Another use case is when a function needs some environment/context but should not pretend that it is a method of that context.
+Example:
+interface LoggingContext {
+    val logger: Logger
+}
+Instead of:
+fun LoggingContext.sendNotification(
+    notification: NotificationData
+)
+we can write:
+context(LoggingContext)
+fun sendNotification(
+    notification: NotificationData
+) {
+    logger.info("Sending notification $notification")
+}
+Now LoggingContext is a required context, not the apparent owner of sendNotification.
+
+Suppose a Christmas-letter builder has:
+fun addItem(item: String)
+We want this:
+christmasLetter {
+    title = "My presents list"
+    +"Cookie"
+    +"Drawing kit"
+}
+We can define:
+context(ChristmasLetterBuilder)
+operator fun String.unaryPlus() {
+    addItem(this)
+}
+So +"Cookie" can call addItem() using the builder available as context.
