@@ -18,4 +18,8 @@
 18. Check if any Scored 100
 19. Check if any Start with A
 20. Check if any more than 1000
-21. 
+21. Check if all positive
+22. Check if all Even
+23. Check if all names have more than 3 Characters
+24. Check if all passed
+25. Check if all price over 0
