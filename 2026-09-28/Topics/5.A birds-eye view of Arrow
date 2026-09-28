@@ -1,0 +1,157 @@
+Arrow is a collection of libraries and compiler plugins that extend Kotlin's support for functional programming. Its goal is to make functional-style Kotlin easier and more productive. We focus on Arrow Core and Arrow Optics and not on Arrow Fx and Arrow Analysis aside. Arrow is basically extra functional-programming tools for Kotlin.
+
+1. Arrow Core: Arrow Core provides useful functional programming features. Important ideas:
+compose
+partial application
+memoization
+property-based testing
+error handling
+Arrow Core is a library for making functional programming "shine" in Kotlin.
+
+2. Function Composition — compose: compose combines two functions into one function.
+Syntax:
+val result = function1 compose function2
+Functions are composed from right to left.
+Example
+val squaredPlusOne: (Int) -> Int =
+    { x: Int -> x * 2 } compose { it + 1 }
+
+3. Partial Application: Partial application means giving some arguments to a function now and creating a new function that needs the remaining arguments later. Arrow Core provides partially1 through partially22.
+Suppose:
+fun String.isPrefixOf(s: String) =
+    s.startsWith(this)
+The function needs two values. We can provide one value:
+val startsWithFP =(String::isPrefixOf).partially1("FP")
+Now we have a function that needs only the remaining argument.
+Original:
+isPrefixOf(prefix, string)
+Give prefix:
+"FP"
+New function:
+startsWithFP(string)
+
+4. Memoization:It is the caching function results. If a pure function calculates the same input multiple times, memoization stores the previous result so it does not need to calculate it again.Fibonacci can be used to demmonstrate this. Without memoization, recursive Fibonacci repeatedly calculates the same values. Arrow's memoize can cache them.
+Syntax
+val memoizedFunction = ::function.memoize()
+
+6. Functional Error Handling: A major idea in Arrow is used to represent errors in the return type instead of relying only on exceptions.
+We can contrasts three approaches:
+Nullable
+Result
+Either
+
+6.1 Nullable: We use nullable values when the main meaning is: "A value may or may not exist."
+Example:
+val number = "123".toIntOrNull()
+Result:
+123   → 123
+"abc" → null
+
+7. Arrow Error DSL — bind: Arrow provides DSLs that let us work with error-producing values in a sequential style.For nullable values:
+nullable.eager {
+    val env = envOrNull("port").bind()
+    val port = env.toIntOrNull().bind()
+    Config(port)
+}
+What does bind() do? It unwraps the successful value. If the value is null, the computation stops and returns null.
+Arrow 1.x uses nullable.eager {} for non-suspend code and nullable {} for suspend code; it describes a planned simplification for Arrow 2.x.
+
+8. Result:Kotlin's Result is useful when an operation may fail with an exception.
+Example
+fun envOrNull(name: String): Result<String?> =
+    runCatching {
+        System.getenv(name)
+    }
+Now the result can represent success or failure.It is recommended to use Result when the operation may fail through exceptions.
+
+9. Either: Either<E, A> represents:
+Left  - error
+Right - success
+Structure:
+sealed class Either<out E, out A> {
+    data class Left<E>(
+        val value: E
+    ) : Either<E, Nothing>()
+
+    data class Right<A>(
+        val value: A
+    ) : Either<Nothing, A>()
+}
+
+Example
+Either<ConfigError, Config>
+means:
+ConfigError - failure
+Config - success
+This is useful when you want custom, typed error types instead of generic exceptions.
+Arrow Optics:  Arrow Optics helps transform immutable data, especially nested data. Suppose:
+data class Address(
+    val zipcode: String,
+    val country: String
+)
+data class Person(
+    val name: String,
+    val age: Int,
+    val address: Address
+)
+Because everything is immutable, changing a nested value normally requires multiple copy() calls:
+fun Person.normalizeCountry(): Person =
+    copy(
+        address = address.copy(
+            country = address.country.capitalize()
+        )
+    )
+Arrow Optics provides a cleaner approach.
+Add the annotation:
+@optics
+data class Address(
+    val zipcode: String,
+    val country: String
+) {
+    companion object
+}
+And:
+@optics
+data class Person(
+    val name: String,
+    val age: Int,
+    val address: Address
+) {
+    companion object
+}
+Arrow generates the necessary optics using its compiler plugin.
+A Lens focuses on one field.Conceptually:
+Lens = getter + setter
+Instead of:
+val age = Person.age.get(this)
+Person.age.set(this, age + 1)
+we can write:
+Person.age.modify(this) {
+    it + 1
+}
+For nested fields:
+Person.address.country
+we can modify the nested value:
+(Person.address.country)
+    .modify(this) {
+        it.capitalize()
+    }
+This avoids manually writing multiple nested copy() calls.
+A Traversal is used when we want to transform multiple elements, especially inside collections.
+For example, if a BirthdayResult contains:
+val people: List<Person>
+we want to increase everyone's age.
+Normally:
+copy(
+    people = people.map {
+        it.copy(age = it.age + 1)
+    }
+)
+With optics, the book composes:
+BirthdayResult.people
+    compose Every.list()
+    compose Person.age
+and then uses:
+.modify(this) {
+    it + 1
+}
