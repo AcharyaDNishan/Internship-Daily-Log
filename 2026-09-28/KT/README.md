@@ -23,3 +23,8 @@
 23. Check if all names have more than 3 Characters
 24. Check if all passed
 25. Check if all price over 0
+26. Check if none of the number is Negative
+27. Check if none is greater than 100
+28. Check if none String start with Z
+29. Check if none failed
+30. Check if no product's price is 0
