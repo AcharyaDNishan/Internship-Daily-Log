@@ -30,7 +30,10 @@ Processes elements one by one.
 Only processes as many elements as necessary.
 
 3. Can be infinite
-A sequence does not need a fixed number of elements.
+A sequence does not need a fixed number of elements. To make infinte sequence:
+val infiniteNumbers = generateSequence(1) { it + 1 } // 1, 2, 3, 4, ...
+val firstFive = infiniteNumbers.take(5).toList()     // [1, 2, 3, 4, 5]
+
 
 4. Less intermediate collections
 filter() and map() do not create a new collection at every step.
