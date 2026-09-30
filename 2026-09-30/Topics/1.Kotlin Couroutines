@@ -1,0 +1,21 @@
+Kotlin Couroutines are Multiplatformed. 
+When we implement application logic on the frontend, what is done is:
+1.Data is taken from another source
+2.Data is processed
+3.Use the Data
+Eg. News
+Get News from an API -> Sort the news -> Display the news on Screen
+This can'r be donne easily on Android. On android, each app has one thread. If the function is used in mmain, then application will crashh. And if used on another thread, when call the app crashes.
+Thread Switching is a solution for this. We can solve the above menntionned problem by switchinng to a thread that can be blocked. Thread switching can still be found in some applications to this date. But it also become problematic. Because:
+1. Memory Leak happens because thhere is no mechanism to cancel the thread. 
+2. Making a thread is costly.
+3. It is confusing to switch thread too much and it is also hard to manage.
+4. The code will unneccessarily get bigger.
+Callback are anotehr pattern that can be used to solve our problems. We make our function non blocking but pass them a function that should be executed onnce thhe process started by the callback function has finished.
+There are cancellable functions, but its not easy to mamke. Cancellable function needs to be specially immplemmented for cancellation and we need to collect the object seprately. The callback architecture solves this problem. But it aslo has a downside. Call back function are far from perfect for non-trivial case.
+RxJava or Reactor is popular in Java and works by using Reactive Streams or Extension. All operations happens inside a stream of data that can be started processed and obseved. they support thread switching and conccurrent processinng. Hence, paralleize processing can be done in application. 
+This is better sollution than callback bacause there is no memory leak, cancellatin support and proper used of threds. But it is commplicated.
+All the functions need to be learned, cancellation needs to be explicit. Function need to return object wrapped inside observable or single class. 
+Core functionallity inn Coroutinen inntroduce is the ability to suspend a Coroutine at somme point and resumme it at future.
+With Kotlin Coroutine,we can implement differnet use case and use other Kotlin Features. 
+Thhe biggest advantage on the backend is simplicity. It barely changes how the code looks. Migrating from thread to coroutiens only need the addinng of suspend Modifier. After this we can introduce concurrence ,test conncurrent behaviour, cancel coroutined andn use all powerful features.
