@@ -1,0 +1,18 @@
+Instead of generator, Kotlin provise a sequence builder. There are few use caase where sequence builders are used. The most typical onne is generating a a mathematical sequence like the Fibonacci. It can also generate random numbers and random strings.
+The sequence builder sshouldnot use suspending operation other thann yielding operation. If you need to fetch data, it is better to use Flow. The way its builder works is similar to the te sequennce builders, but flow hhas suppoer for other coroutine features. 
+Suspending Coroutine means stopping it in mmiddle. When they are suspended, they return a continuation. This feature also makes Coroutine different fromm thread because thhhread can be blocked but not saved unlike Coroutine. When suspennded, it doesn't consumme resource. A Coroutine can be resumed on a different thread and ,in theory, a continuation can be seriallized, deseriallized and thehn resumed.
+Suspending function are function that can suspend coroutine. Thhis mmeans they must be called.
+Syntax:
+suspendCoroutine<Unti>{
+    //operation if any because this is a lammbda expression
+}
+Whhen we call suspendCoroutine, we can specify which type will be returned in its continuation. Thhe same type needs to be used when resuming.
+Eg.
+suspend fun main(){
+    val i: Int = suspendCoroutine<Int>{cont->
+        cont.resume(42)
+
+    }
+    println(i) //42
+}
+Sometimes function we call mmighht also returnnn some value or throw an exception. It is same with suspendCoroutine. There we use resumeWithException innstead of Resume. Suspending functionns are not coroutine, just functiont hat can suspend coroutine. Suspending function suspend coroutines and not function.
