@@ -1,0 +1,35 @@
+1. runblocking: Stop everything and wait for the operation to be performed.
+Syntax:
+runBlocking{
+    //operation block
+}
+
+2.launch-SStart the operation inn background annd keep moving. Has to be used innside a Kotlin Scope like runBlocking.
+Syntax:
+launch{
+    //operation block
+}
+
+3.delay: Delays
+Syntax:
+delay(time to delay by in Millisecond)
+
+4.async: Starts a background coroutine instantly.
+Syntax:
+val variable=async{suspended function}
+
+5.await: It pauses code until the background task finnsihes andn return the result.
+Syntax:
+variable.await()
+
+6.cancel: Cancels the bacckground task or job.
+Syntax:
+variable.cancel()
+
+7.join: Wait for the job or background task to be over.
+Syntax:
+variable.join()
+
+8.cancelandjoin: Cancel and Join in one funnction
+Syntax:
+variable.cancelAndJoin()
