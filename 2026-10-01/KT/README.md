@@ -6,3 +6,4 @@
 6. Using coroutineScope with 2 child performing differenet task.
 7. Creating three child in a coroutineScope and throwing an Exception in one.
 8. No. 7 but using supervisorScope.
+9. Try-Catch inside Launch.
