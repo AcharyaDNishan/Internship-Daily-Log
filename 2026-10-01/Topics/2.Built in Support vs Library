@@ -1,0 +1,14 @@
+Built in language support is designed to mminimalistic and give as mmuch features as possible. On the other hannd, kotlinxx.coroutines library are separate dependenncies that need to be added to teh project and is built on top of the built in language support.
+Built In Suppot:
+1> Compiler support annd Element inn the Kotlin Standard library
+2> Elemennts are inn the Coroutinne Package
+3> Provides few basic keyword.
+4> Hard to use directly.
+5> Allow nearly any concurrence style
+
+kotlinx.coroutines Library:
+1> Separate depenndencies needs to be added to the project
+2> Elements are in the Kotlinx Coroutine Package
+3> Provides many Element
+4> Designed for direct use
+5> Designed for one concrete Concurence style
