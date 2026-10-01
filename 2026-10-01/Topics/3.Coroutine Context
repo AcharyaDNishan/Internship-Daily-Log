@@ -1,0 +1,108 @@
+CoroutineContext is a collection of information used by a coroutine. It can contain elements such as Job, CoroutineName, CoroutineDispatcher and CoroutineExceptionHandler.Its like a map/set of coroutine information. Each element has a unique Key used to find it. 
+Each context element is also a CoroutineContext.
+Eg.
+val name = CoroutineName("MyCoroutine")
+val context: CoroutineContext = name
+Every element has a unique key. Their keys allow us to retrieve them from the context. 
+
+To get an element from Context we use [] or get().
+Eg. using []
+val ctx: CoroutineContext = CoroutineName("MyCoroutine")
+val name = ctx[CoroutineName]
+println(name?.name) \\MyCoroutine
+Eg.Using get():
+ctx.get(CoroutineName)
+Both are equivalent. If the element does not exist, null is returned.Context[Key] returns the elemmen att the key
+Contexts can be added using +.
+Eg.
+val ctx1 = CoroutineName("Name1")
+val ctx2 = Job()
+val ctx3 = ctx1 + ctx2
+Now ctx3 contains both:
+ctx3[CoroutineName]
+ctx3[Job]
+If two elements have the same key, the new element replaces the old one.
+Eg.
+val ctx1 = CoroutineName("Name1")
+val ctx2 = CoroutineName("Name2")
+val ctx3 = ctx1 + ctx2
+println(ctx3[CoroutineName]?.name) \\Name2
+If different key then both are kept. If same key then new one replaces old one
+An empty context can also be used which contains no elements.
+eg.
+val empty: CoroutineContext = EmptyCoroutineContext
+println(empty[CoroutineName]) // null
+println(empty[Job])           // null
+
+Adding an empty context changes nothing.
+eg.
+val ctx = empty + CoroutineName("Name1") + empty
+We can remmove an elemment usign minusKey().
+Eg.
+val ctx = CoroutineName("Name1") + Job()
+val ctx2 = ctx.minusKey(CoroutineName)
+Now:
+ctx2[CoroutineName] // null
+ctx2[Job]           // Job
+Syntax:
+context.minusKey(Key)
+fold() can process every element in the context like in Collections. It takes an initial value and then performd. operation using the accumulator and current element.
+Eg.
+val ctx = CoroutineName("Name1") + Job()
+ctx.fold("") { acc, element ->
+    "$acc$element "
+}.also(::println)
+So, fold processes every element and build one result
+A child coroutine inherits the context of its parent by default.
+Eg.
+fun main() = runBlocking(CoroutineName("main")) {
+    launch {
+        println(coroutineContext[CoroutineName]?.name)
+    }
+}
+The child inherits main.Child Can Override Parent Context. A child can provide its own context.
+Eg.
+fun main() = runBlocking(CoroutineName("main")) {
+    launch(CoroutineName("child")) {
+        println(coroutineContext[CoroutineName]?.name) \\child
+    }
+}
+The child's element replaces the parent's element when they have the same key.Same-key child elements override parent elements. 
+A normal CoroutineScope can access coroutineContext. A suspend function can also access the context through coroutineContext.
+Eg.
+suspend fun main() = withContext(CoroutineName("Outer")) {
+    printName() \\Outer
+    launch(CoroutineName("Inner")) {
+        printName() \\Inner
+    }
+}
+Inside a suspend function coroutineContext lets you access the current coroutine's context.
+We can also create our own CoroutineContext.Element.
+Basic structure:
+class MyCustomContext : CoroutineContext.Element {
+    override val key: CoroutineContext.Key<> = Key
+    companion object Key :
+        CoroutineContext.Key<MyCustomContext>
+}
+The Key identifies the context element. 
+Eg.
+class CounterContext(
+    private val name: String
+) : CoroutineContext.Element {
+    override val key: CoroutineContext.Key<> = Key
+    private var nextNumber = 0
+    fun printNext() {
+        println("$name: $nextNumber")
+        nextNumber++
+    }
+    companion object Key :
+        CoroutineContext.Key<CounterContext>
+}
+We can also access it from a suspend function.
+Eg.
+suspend fun printNext() {
+    coroutineContext[CounterContext]?.printNext()
+}
+The context is inherited by child coroutines, and a child can replace it with another CounterContext. 
+The book also shows custom contexts being used to provide different implementations for production and testing.
+Like for Production, RealUuidProviderContext is provided and for Testing is provided FakeUuidProviderContext
