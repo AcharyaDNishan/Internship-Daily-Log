@@ -14,3 +14,7 @@
 14. Create a simple program that simulates downloading three files concurrently. Each file should take a different amount of time.
 15. Taskmanager that starts three coroutine tasks, give each task a different delay, print when each starts, print when each finishes, allow the user to cancel the tasks and wait for all remaining tasks to finish.
 16. Creating a Sequene and use Yield to print.
+17. Sequence to yield 1 to 10
+18. Even No. Yield
+19. Prime Number Yield
+20. Square Yield
