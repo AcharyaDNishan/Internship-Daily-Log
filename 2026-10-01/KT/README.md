@@ -5,3 +5,4 @@
 5. Sum of 1 to 1000 usinf Dispatcher.Default.
 6. Using coroutineScope with 2 child performing differenet task.
 7. Creating three child in a coroutineScope and throwing an Exception in one.
+8. No. 7 but using supervisorScope.
