@@ -1,0 +1,144 @@
+Cancellation is one of the most important features of Kotlin Coroutines. It allows a coroutine to stop safely instead of simply killing a thread, giving it a chance to clean up resources.A Job can be cancelled using job.cancel(). When a Job is cancelled, the coroutine stops at its first suspension point,its child coroutines are also cancelled and its parent are not cancelled.
+The Job moves through Cancelling to Cancelled. A cancelled Job cannot be used as a parent for new coroutines.
+Eg.
+suspend fun main() = coroutineScope {
+    val job = launch {
+        repeat(1000) { i ->
+            delay(200)
+            println("Printing $i")
+        }
+    }
+    delay(1100)
+    job.cancel()
+    job.join()
+    println("Cancelled successfully")
+}
+The Possible output printed:
+Printing 0
+Printing 1
+Printing 2
+Printing 3
+Printing 4
+Cancelled successfully
+cancel() vs join(): Both these do different things. job.cancel() means cancel the coroutine. job.join() means waitingg until the coroutine has finished.Most often we use both job.cancel() and job.join() because cancel() requests cancellation, while join() waits for the cancellation process to finish. But Kotlin provides a shortcut job.cancelAndJoin(). It is essentially mmerge of Cancel and Join. So they have the same purpose.
+A Job() can be used as a parent for several coroutines.
+Syntax:
+val job = Job()
+launch(job) {
+    // Task 1
+}
+launch(job) {
+    // Task 2
+}
+launch(job) {
+    // Task 3
+}
+Then job.cancelAndJoin() can cancel the group. This pattern is useful when several concurrent tasks need to be cancelled together.
+When a coroutine is cancelled, it enters the Cancelling state. At a suspension point, a CancellationException is thrown.
+Eg.
+launch {
+    try {
+        repeat(1000) {
+            delay(200)
+            println("Printing")
+        }
+    } catch (e: CancellationException) {
+        println("Cancelled")
+        throw e
+    }
+}
+When catching CancellationException, it is recommended rethrowing it. This preserves normal coroutine cancellation behavior.
+Cancellation does not simply kill the coroutine. A coroutine can perform cleanup in a finally block.
+
+Eg.launch {
+    try {
+        delay(2000)
+        println("Done")
+    } finally {
+        println("Cleaning up...")
+    }
+}
+Even when cancelled, the finally block is executed. This is useful for closing files,closing database connections, releasing resources and other cleanup work.
+Suspension Is Not Allowed During Normal Cancellation Cleanup. When a coroutine is already in the Cancelling state, normal suspension is no longer allowed.Eg.
+finally {
+    delay(1000)
+}
+This can throw CancellationException. Also, trying to start another coroutine during this state will not work normally.
+Sometimes cleanup itself needs a suspending function. NonCancellable provides a context where cancellation does not stop the cleanup operation.
+Eg.
+launch {
+    try {
+        delay(2000)
+    } finally {
+
+        withContext(NonCancellable) {
+            delay(1000)
+            println("Cleanup done")
+        }
+    }
+}
+Job provides job.invokeOnCompletion { ... }. It registers a handler that runs when the Job reaches a terminal state COMPLETED or CANCELLED.
+Eg.
+val job = launch {
+    delay(1000)
+}
+job.invokeOnCompletion {
+    println("Finished")
+}
+The handler receives a Throwable?:
+job.invokeOnCompletion { exception ->
+    println(exception)
+}
+Cancellation Only Happens at Suspension Points. Cancellation is cooperative. A coroutine must reach a point where cancellation can be checked.
+Eg.
+launch {
+    repeat(1000) {
+        Thread.sleep(200)
+        println("Printing")
+    }
+}
+Thread.sleep() is blocking and does not provide a coroutine suspension point. Therefore job.cancel() cannot immediately stop this work.
+When you have long CPU/blocking operations, you can periodically call yield(). yield() suspends and immediately gives the coroutine an opportunity to respond to cancellation.
+Eg.
+launch {
+    repeat(1000) {
+
+        Thread.sleep(200)
+
+        yield()
+
+        println("Printing")
+    }
+}
+Now cancellation can be detected at yield().
+Another way is to manually check whether the coroutine is still active.
+Eg.
+launch {
+    do {
+        Thread.sleep(200)
+        println("Printing")
+    } while (isActive)
+}
+When the Job is cancelled isActive will be false and the loop ends.
+Instead of repeatedly checking if (isActive)  we can use ensureActive().It throws CancellationException when the Job is no longer active.
+Eg.
+launch {
+    repeat(1000) {
+
+        Thread.sleep(200)
+
+        ensureActive()
+
+        println("Printing $it")
+    }
+}
+When cancelled, ensureActive() detects it and stops the coroutine.
+yield() vs ensureActive():They are related but not the same. ensureActive() is lighter, while yield() is more suitable when you actually want suspension.
+suspendCancellableCoroutine is useful when converting callback-based APIs into suspending functions while still supporting cancellation.
+Syntax:
+suspendCancellableCoroutine { continuation ->
+    continuation.invokeOnCancellation {
+        // cleanup
+    }
+}
+The important function here is continuation.invokeOnCancellation { ... }. It lets you define what should happen when the coroutine is cancelled.
