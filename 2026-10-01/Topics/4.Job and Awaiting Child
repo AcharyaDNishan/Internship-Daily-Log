@@ -1,0 +1,77 @@
+A Job represents a coroutine's lifecycle and allows us to control, monitor, cancel, and wait for a coroutine. Every coroutine has its own Job.
+The diagram shows the different states of a Job:
+NEW
+ │
+ │ start
+ v
+ACTIVE
+ │
+ ├ -─ complete ──>COMPLETING ──> COMPLETED
+ │
+ └── cancel/fail ──> CANCELLING ──> CANCELLED
+States:
+NEW-Coroutine has been created but not started yet
+ACTIVE-Coroutine is running
+COMPLETING-Coroutine body is finished, but it is waiting for children
+COMPLETED-Coroutine and all children are finished
+CANCELLING-Coroutine is being cancelled / has failed; cleanup can happen
+CANCELLED-Coroutine has been completely cancelled
+Most coroutines start directly in ACTIVE. A coroutine started with CoroutineStart.LAZY starts in NEW. When a coroutine finishes its own body, it does not necessarily become COMPLETED immediately. A parent therefore waits for its children before reaching the final completed state.
+A Job provides three useful properties:
+job.isActive
+job.isCompleted
+job.isCancelled
+NEW- isActive(false),isCompleted(false),isCancelled(false)
+ACTIVE-isActive(true),isCompleted(false),isCancelled(false)
+COMPLETING-isActive(true),isCompleted(false),isCancelled(false)
+CANCELLING-isActive(false),isCompleted(false),isCancelled(true)
+CANCELLED-isActive(false),isCompleted(true),isCancelled(true) 
+COMPLETED-isActive(false),isCompleted(true),isCancelled(false) 
+Eg.
+val job = launch {
+    delay(1000)
+}
+println(job.isActive)
+job.join()
+println(job.isCompleted)
+Every Coroutine Has a Job. Coroutine builders create jobs. You can get the current job from the context coroutineContext[Job]. There is also coroutineContext.job.
+Eg.
+runBlocking {
+    println(coroutineContext.job.isActive)
+}
+Job Is not Inherited. Other coroutine context elements are inherited, but Job itself is not copied from parent to child. Every coroutine creates its own Job. The parent's Job becomes the parent of the new Job.
+A parent can access its children.
+Eg.
+val parentJob = coroutineContext.job
+val children = parentJob.children
+And the parent-child relationship allows Kotlin to implement structured concurrency, cancellation, and exception handling. The parent does not wait for it, breaking structured concurrency.
+You can access all children using job.children.
+Eg.
+val children = coroutineContext[Job]?.children
+children?.forEach {
+    it.join()
+}
+This waits for every child to reach a final state.
+You can also create a standalone Job.
+Syntax:
+val job = Job()
+job.join() does not automatically wait for its children in the way you might expect.A standalone Job() remains active until it is completed or cancelled. Therefore, joining it without completing it can wait forever.
+Job() returns a CompletableJob. It provides:
+job.complete()
+job.completeExceptionally(exception)
+complete()
+It Marks the job as completing. Existing children are allowed to finish, but new children cannot be started in that job.
+Eg.
+val job = Job()
+
+launch(job) {
+    delay(1000)
+    println("Child")
+}
+job.complete()
+job.join()
+completeExceptionally()
+Completes the job with an exception and cancels its children.
+job.completeExceptionally(
+    Exception("Something went wrong")
+)
