@@ -8,3 +8,4 @@
 8. No. 7 but using supervisorScope.
 9. Try-Catch inside Launch.
 10. Exception Handling using CoroutineExceptionHandler.
+11. Creating a coroutine that has a timeout of 2 seconds using withTimeout. Making the task take 5 seconds and Observing the result.
