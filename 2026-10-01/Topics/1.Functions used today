@@ -1,0 +1,45 @@
+1. withContext: a scoping funcntion thhat allows to safely switch the execution of a code to a different thread or dispatcher without blocking the thread.
+Syntax:
+withContext(Dispatcher)
+
+2. Dispatcher.Default: Built in Coroutine dispatcher. Optimised for CPU Intennsive Operation that demands heavy computational power. Used for heavy mathematical calculations, parsing large JSON files, sorting huge lists, filtering collection or running complex image video processing algorithm. Thread Count = minimum of 2
+
+3. coroutineScope: a Scoping Functionn used to creat a hierarchhial child sscope innside an exsisting Coroutine. It is designed for structural conncurrency. If anny child launched inside it fails, the entier scope fails.
+Syntax:
+coroutineScope{
+    child1
+    child2
+}
+
+4. supervisorScope: Alternative to coroutineScope. If one child fails, the othehr are protected annd don't fail.
+Syntax:
+supervisorScope{
+    child1
+    child2
+}
+
+5.CoroutineExceptionHandler: Optional commponent. Acts as a Global Safety Net for unncaughht exception inn Coroutines. Coroutine alternative to try-catch.
+Syntax:
+val variable=CoroutineExceptionHandler{context,exceptionn->
+    //block
+}
+launch(variable){
+    operation block
+}
+Doesn't work on Async because the exception of suspend function thrown while running async only comems to the main when using await.
+
+6.localizedMessage: Designned to return a userfriendly translatied descriptionn of an error based on the user's current device language.
+
+7.withTimeout: scopinng function. Stops the executionn of program block if it takes mmore time than allocated and return TimeoutCancellationException. This is a caugth exceptionn that doesn't cause crash hhence CoroutineExceptionHandler can't find it and we need to use try-catch.
+Syntax:
+withTimeout(time in second){
+    //operation block
+}
+
+8.withTimeoutOrNull: Null version of Timeout.
+
+9.isActive: Boolean Property. It tells if the current coroutine is still running or has beenn cancelled.
+
+10.Yield: Temporarily suspends the coroutined. If used inside sequence builder, it works differently. It pauses the execution of block and passes the value inside the brackets.
+Syntax:
+yield()
