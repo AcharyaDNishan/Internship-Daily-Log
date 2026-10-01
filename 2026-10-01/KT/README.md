@@ -10,3 +10,4 @@
 10. Exception Handling using CoroutineExceptionHandler.
 11. Creating a coroutine that has a timeout of 2 seconds using withTimeout. Making the task take 5 seconds and Observing the result.
 12. No. 111 with withTimeoutOrNull.
+13. Using isActive and Cancel
