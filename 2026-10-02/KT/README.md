@@ -10,3 +10,5 @@
 10. Create a long-running loop using ensureActive(). Observe what happens when the coroutine is cancelled.
 11. Create a suspend function called waitForInput() using suspendCancellableCoroutine. Resume the continuation after a simulated event.
 12. Create a cancellable suspend function that waits for 5 seconds. Cancel the coroutine before the 5 seconds finish and handle the cancellation.
+13. Create a Job and retrieve it from a context using context[Job]. Print whether the job is active.
+14. Create a CoroutineName and retrieve it from a coroutine context using context[CoroutineName] and print the name.
