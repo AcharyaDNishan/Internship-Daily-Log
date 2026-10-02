@@ -15,3 +15,6 @@
 15. Retrieve a CoroutineName from a context using context.get(CoroutineName).
 16. Retrieve a Job using context.get(Job) and print its state.
 17. Create two contexts context1 = CoroutineName("First") and context2 = CoroutineName("Second") and combine contexts using + and observe which CoroutineName is stored.
+18. Combine a Job, CoroutineName, and Dispatchers.Default into one coroutine context using +.
+19. Create a context containing a CoroutineName and remove it using minusKey(CoroutineName). Check whether the name still exists.
+20. Create a context containing a Job and CoroutineName. Remove only the Job and print the remaining context elements.
