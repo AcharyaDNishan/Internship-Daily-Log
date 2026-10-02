@@ -5,6 +5,6 @@ fun main() = runBlocking {
         print("Hello")
     }
     val cc: CoroutineContext = job
-    val name=  cc[Job]
-    println("${name?.isActive}")
+    val name=  cc.get(Job)
+    println("Coroutine name: ${name?.isActive}")
 }

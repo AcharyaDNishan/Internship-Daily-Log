@@ -12,3 +12,5 @@
 12. Create a cancellable suspend function that waits for 5 seconds. Cancel the coroutine before the 5 seconds finish and handle the cancellation.
 13. Create a Job and retrieve it from a context using context[Job]. Print whether the job is active.
 14. Create a CoroutineName and retrieve it from a coroutine context using context[CoroutineName] and print the name.
+15. Retrieve a CoroutineName from a context using context.get(CoroutineName).
+16. Retrieve a Job using context.get(Job) and print its state.
