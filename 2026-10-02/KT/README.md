@@ -22,3 +22,5 @@
 22. Use fold() to count how many elements exist in a coroutine context.
 23. Inside a coroutine, retrieve the current Job using coroutineContext.job and print whether it is active.
 24. Use coroutineContext.job to cancel the current job from inside the coroutine.
+25. Create a parent coroutine with three child coroutines. Use coroutineContext.job.children to print the number of child jobs.
+26. Create several child coroutines with different delays and use children to check whether they are still active.
