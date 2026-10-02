@@ -1,0 +1,52 @@
+startCoroutine: a low level primitive extensionn function. Unlike Launch, startCoroutine is call directly in a suspending lambda. It requires a continnuation object which acts as the completion call back tellinng the programm whhhat to do when the coroutine succed or throws an exception. 
+Syntax:
+val variable:suspend()->Variabletype=suspend{
+    suspend function call
+}
+variable.startCoroutine(object:Continuation<String>{
+    overide val context: CoroutineContext=EmptyCoroutineContext
+    overide fun resumeWith(result: Result<varaibletype>){
+        operation
+    }
+})
+
+resumeWith: Core entry point for the Continnuation pattern. Acts as a universal call back functionn that system triggers when a coroutine finsihes its works. Everytime a coroutine halts or completes, resumeWith is invoked to deliver either a succesful value or a thrown failure exception. Always has to be wrapped inn Result<T>
+
+createCoroutine: allows to innitialize and prepare a coroutinne inn mmemmory without executinng it immediatly.
+Syntax:
+val variable:suspend()->Variabletype=suspend{
+    suspend function call
+}
+var variablenew=variabl(object:Continuation<String>{
+    overide val context: CoroutineContext=EmptyCoroutineContext
+    overide fun resumeWith(result: Result<varaibletype>){
+        operation
+    }
+    variable.resume(unit/data returned type)
+})
+
+resume: extension built on top of resumeWith. Used to pass a successful outcome value back to a suspened coroutinne, signallinng it to wake up and conntine execction.
+
+sleep(): puts thread to sleep.
+Syntax: 
+thread.sleep(time in milli second)
+
+SuspendCancellableCoroutine: Standard production safe way to bridge old school call back based APIs into modern, sequenntial coroutinne. It works like suspendCoroutine but it suppotrts Coroutine Cancellationn. If coroutine is cancelled in Background, it returnns CancellationException.
+Syntax:
+suspennd fun funname():Datatyoe-suspendCancellableCoroutine{
+    operationns
+}
+
+coroutine.get(): Get the data in the mmentionnfield.
+
+minusKey(): allows to remmove a speccific element from an exsistinngg coroutinne providing its unique class key. minnusKey() doesn't mmodify the original context. But returns a brand new context.
+Syntax:
+var=vara.minusKey(field)
+
+fold(): allos you to iterate through every singe inndividual elemennt inside a combinend coroutinne context and fold them down innto a single final result. Inside the bbraccket we need to put the return type, unlike the fold used in Collection Processing.
+
+coroutineContext.job: allows yout to instantly access the element mannging thhe current scope. Instantly read teh current job connfiguration detail.
+
+commplete: used to manually signal that a job has beenn completed.
+
+completeExceptionally: manually force a job to fail with a specific error exxception.
