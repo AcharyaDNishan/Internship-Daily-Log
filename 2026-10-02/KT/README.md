@@ -25,4 +25,5 @@
 25. Create a parent coroutine with three child coroutines. Use coroutineContext.job.children to print the number of child jobs.
 26. Create several child coroutines with different delays and use children to check whether they are still active.
 27. Create a CompletableJob, complete it manually using complete() and check isCompleted.
-28. 
+28. Create a CompletableJob with a completion handler, call complete(), and observe the result.
+29. Create a CompletableJob and complete it exceptionally using completeExceptionally(Exception("Failed")) then check whether it is cancelled.
