@@ -1,7 +1,10 @@
 import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
 fun main() = runBlocking {
-    val cc: CoroutineContext = CoroutineName("My Coroutine")
+    val job:Job=launch{
+        print("Hello")
+    }
+    val cc: CoroutineContext = job
     val name=  cc[CoroutineName]
     println("Coroutine name: $name")
 }
