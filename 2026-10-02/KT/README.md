@@ -7,3 +7,4 @@
 7. Create a continuation whose result type is Int. Resume it successfully using resumeWith(Result.success(...)).
 8. Resume a continuation with Result.failure(Exception("Something went wrong")) and print the error.
 9. Create a coroutine that repeatedly prints numbers from 1 to 100 and calls ensureActive() on every iteration. Cancel the coroutine after a short delay.
+10. Create a long-running loop using ensureActive(). Observe what happens when the coroutine is cancelled.
