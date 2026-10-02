@@ -14,3 +14,4 @@
 14. Create a CoroutineName and retrieve it from a coroutine context using context[CoroutineName] and print the name.
 15. Retrieve a CoroutineName from a context using context.get(CoroutineName).
 16. Retrieve a Job using context.get(Job) and print its state.
+17. Create two contexts context1 = CoroutineName("First") and context2 = CoroutineName("Second") and combine contexts using + and observe which CoroutineName is stored.
