@@ -18,3 +18,5 @@
 18. Combine a Job, CoroutineName, and Dispatchers.Default into one coroutine context using +.
 19. Create a context containing a CoroutineName and remove it using minusKey(CoroutineName). Check whether the name still exists.
 20. Create a context containing a Job and CoroutineName. Remove only the Job and print the remaining context elements.
+21. Create a coroutine context with several elements and use fold() to print each context element.
+22. Use fold() to count how many elements exist in a coroutine context.
