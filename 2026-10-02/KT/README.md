@@ -20,3 +20,5 @@
 20. Create a context containing a Job and CoroutineName. Remove only the Job and print the remaining context elements.
 21. Create a coroutine context with several elements and use fold() to print each context element.
 22. Use fold() to count how many elements exist in a coroutine context.
+23. Inside a coroutine, retrieve the current Job using coroutineContext.job and print whether it is active.
+24. Use coroutineContext.job to cancel the current job from inside the coroutine.
