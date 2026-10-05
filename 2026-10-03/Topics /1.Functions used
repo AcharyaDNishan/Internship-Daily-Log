@@ -4,3 +4,7 @@ There are 2 Ways to Trigger a Lazy Coroutine once a coroutine is marked lazy bec
 2. job.join() (or .await() for async): Starts the coroutine but suspends the calling line until the coroutine finishes its work completely.
 
 iscomplete(): Checks if completed or not.
+
+isCancelled: Checks if cancelled.
+
+invokeOnCompletion(): on completion, it will excecute the block
