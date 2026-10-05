@@ -2,3 +2,5 @@ By default, when you call launch or async, the coroutine is scheduled to execute
 There are 2 Ways to Trigger a Lazy Coroutine once a coroutine is marked lazy because it remains inactive until it receives one of two triggers:
 1. job.start(): Starts the coroutine concurrently in the background and returns true immediately. It does not pause the code that called it.
 2. job.join() (or .await() for async): Starts the coroutine but suspends the calling line until the coroutine finishes its work completely.
+
+iscomplete(): Checks if completed or not.
