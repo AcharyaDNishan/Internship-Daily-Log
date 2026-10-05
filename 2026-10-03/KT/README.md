@@ -4,3 +4,5 @@
 4. Create a Job, wait for it using join(), and then print job.isCompleted.
 5. Create a coroutine, cancel it, and check job.isCancelled.
 6. Create a coroutine that throws an exception and check whether its job becomes cancelled.
+7. Create a coroutine and print the message when the coroutine completes.
+8. Create a coroutine that is cancelled before it finishes. Use invokeOnCompletion() to print the cancellation exception.
