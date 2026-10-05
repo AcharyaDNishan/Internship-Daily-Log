@@ -1,0 +1,85 @@
+Coroutine Scope is an innterface with a sinle coroutine conntect. 
+Syntax:
+innterface CoroutineScope{
+    val coroutineContext: CoroutineContect
+}
+This not a very popular method because in such class we can directly call other Coroutine Method like Cancel. Instead, we generally prefer to hold a coroutine scope as an object in a property annd use it to call coroutine builders.
+Syntax:
+class Classname{
+    val variable:CoroutineScope=....
+    fun onStart(){
+        scope.launch{
+            //....
+        }
+    }
+}
+Easiest Way is by using the CoroutineScope Factory function which creates a scope with provided context.
+In Android applications, coroutines are commonly started in ViewModels or Presenters. Other layers such as Use Cases and Repositories generally expose suspend functions instead of creating their own coroutines. A good Android ViewModel scope should provide Main thread, cancellation, independent child coroutines and exception handling.
+Basic CoroutineScope:  A scope is created using CoroutineScope(...)
+Syntax:
+abstract class BaseViewModel : ViewModel() {
+    protected val scope =
+        CoroutineScope(Dispatchers.Main)
+}
+Then a child coroutine can be started:
+scope.launch {
+    val user = userRepo.getUser()
+    view.showUserData(user)
+}
+Main function
+CoroutineScope(context)
+It's purpose is to create a CoroutineScope using the given CoroutineContext.
+Dispatchers.Main: Android commonly needs work to interact with the UI on the Main thread.So the scope can use is Dispatchers.Main
+Example:
+CoroutineScope(Dispatchers.Main)
+Add a Job: The scope should also have a Job so its coroutines can be cancelled together.
+Syntax:
+protected val scope =
+    CoroutineScope(
+        Dispatchers.Main + Job()
+    )
+Now we can cancel the scope:
+scope.cancel()
+It is Important to know that combinin context elements like Dispatchers.Main + Job() means Main dispatcher+Job
+ViewModel provides onCleared(). This is called when the ViewModel is being destroyed.A simple approach is:
+override fun onCleared() {
+    scope.cancel()
+}
+cancel() vs cancelChildren(): Cancel() cancels the scope itself.Once the Job is cancelled, it cannot normally be used to start new child coroutines. While cancelChildren() cancels the current child coroutines but keeps the scope usable for starting new coroutines later. So the Android pattern shown is:
+override fun onCleared() {
+    scope.coroutineContext.cancelChildren()
+}
+Suppose a ViewModel starts two coroutines:
+scope.launch {
+    getUser()
+}
+scope.launch {
+    getNews()
+}
+This is often undesirable. A failure while loading the user should not necessarily prevent the news from loading. Therefore SupervisorJob() can be used.
+Syntax:
+protected val scope =
+    CoroutineScope(
+        Dispatchers.Main + SupervisorJob()
+    )
+The basic improved version becomes:
+abstract class BaseViewModel : ViewModel() {
+    protected val scope =
+        CoroutineScope(
+            Dispatchers.Main + SupervisorJob()
+        )
+    override fun onCleared() {
+        scope.coroutineContext.cancelChildren()
+    }
+}
+We may also want a default way to handle uncaught exceptions that vreate:
+val exceptionHandler =
+    CoroutineExceptionHandler { _, throwable ->
+        onError(throwable)
+    }
+Then add it to the context and create the scope. Now we can aslo use viewModelScope or lifeCycleScope. They use Dispatcher.Main annd Supervisor Jobb and they cancel the job wehn the view mmodel or lifecycle owner ets destroyed. 
+Constructing a Coroutine in Backend: We don'e need to this mowadays but still:
+1> Custom Dispatchher with a pool of thread
+2> Supervisor job to make different Coroutinne Inndependent
+3> Probably somme CoroutineExceptionHandler to respond with proper error code.
+Such scope is oftenn injected into classes via connstructor. We often mmake scopre for additional function.
