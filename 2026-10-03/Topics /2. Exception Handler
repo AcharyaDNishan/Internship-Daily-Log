@@ -1,0 +1,14 @@
+Just like a program, a coroutinesbreaks due to uncaught exceptionn. Coroutine bbuilder also cancel thheir parents and all the children of theh parent. Once a coroutine recience an exxception, it cance itself and propaggtes the exception to its parents and vice versa.
+The most important way to stop coroutine breaakinng is using a supervisor job that ignnotes all exception inn its children. supervisorJob is generally used as part of a scope in which we start multiple scope.
+Syntax:
+val scope=CoroutineScope(SupervisedJob())
+scope.launch{
+    block
+}
+Each of them can be cancelled but they won't cancel each other.
+We can also stop execution propogation by wrappinn coroutine builders with supervisor scope. 
+Syntax:
+supervisorScope{
+    operation block
+}
+Another way to stop is using coroutineScope. This function throws an exception that can be caught using try-catch. supervisorScope cannnot be replaced with withContext(Supervisor Job())!. whenn we use await() and an exception is thrown, that is the value stored. CancellationError doesn't propogate to parents.
