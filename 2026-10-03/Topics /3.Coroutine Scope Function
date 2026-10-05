@@ -1,0 +1,9 @@
+Approaches used before Coroutine Scope Funcntions:
+1> Callinng suspending function from a suspendinng function. The problem is that it is not conncurrent. To make it concurrent, the easiest way is by wrappinng themm with async. But async requires a scope and using Global scope is not a good idea.
+2>Another is passing a scope as an arguemment. A bit better. But the solution require scope to be passed from function to function and it can cause unwanted side effect in the scope. An function that has access to thhe scope could easily abouse the access. This is why this approachh is tricky and potentially danngerous. 
+
+coroutineScope is a suspending functionn that starts a scope. It returnns the value producced by the arguement funnction. Unlike Coroutinne Builder, if there is an exception in Coroutine Scope or any children, it cancels all other children and rethrows it. There are more functions that create scope and behave similarly to a coroutineScope.supervisorScope is like coroutineScope but it usess Supervisor Job instead of Job. withContext and withTimeour can also be used similarly.
+CoroutinneScope starts a Coroutine that is called inn palce.
+withContext is silmmialr to Coroutine Scope but it allows change to be made to the scope. withContext(EmmptyCoroutineCotnext) behaves like coroutineScope().
+supervisorScope also behaves a lot like coroutine scope. But it overrises the context's job with supervisorJob. So it is not cancelled when a child raises and exception. MMainly used inn functionn that starts multiple indpenedent. If we use async, we need to wrap await with a try-catch blocks to truly ignore exception.
+withTimeout also behaves like it if the time is very big. But it additionaly sers a timeout limit for its body executor. It is especially usefull for testing. If we need to use functionalties from two coroutinne, we need to use one inside the other.
