@@ -1,0 +1,170 @@
+Recipe 1: Asynchronous map:
+Normally, map() processes items one by one.When getData() is a suspending operation, processing many independent items one after another can be slow.But if the operations are independent, we can start them together.We create a reusable mapAsync() function for this purpose.
+Eg.
+suspend fun <T, R> List<T>.mapAsync(
+    transformation: suspend (T) -> R
+): List<R> = coroutineScope {
+    this@mapAsync
+        .map { async { transformation(it) } }
+        .awaitAll()
+}
+The function itself can perform suspending operations. Creates a coroutine scope and makes sure the child coroutines are properly managed. Instead of directly transforming each item, it starts an async coroutine for each item. Waits for all the Deferred results and returns their values.
+
+Recipe 2: Suspending Lazy Initialization: Kotlin's lazy calculates a value only when it is needed. But there is a problem when the initializer is a suspending function.This is not supported because lazy is not designed for a suspending initializer. The solution is to create a function that returns a suspending getter function:
+fun <T> suspendLazy(
+    initializer: suspend () -> T
+): suspend () -> T
+So instead of connection we use connection() because the returned getter itself is suspendable.
+Imagine two coroutines call the lazy getter at the same time:
+Coroutine A - "Is value ready?"
+Coroutine B - "Is value ready?"
+Both might see Not ready and both start calculating the value. That would create the same value twice. So we need Mutex(). A Mutex allows only one coroutine at a time into the critical section.
+Eg.
+private val NOT_SET = Any()
+fun <T> suspendLazy(
+    initializer: suspend () -> T
+): suspend () -> T {
+    val mutex = Mutex()
+    var holder: Any? = NOT_SET
+    return {
+        if (holder !== NOT_SET) {
+            holder as T
+        } else {
+            mutex.withLock {
+                if (holder === NOT_SET) {
+                    holder = initializer()
+                }
+                holder as T
+            }
+        }
+    }
+}
+The important part is the double check if (holder !== NOT_SET) and then inside the lock if (holder === NOT_SET). The second check prevents another coroutine from calculating the same value after waiting for the mutex. The source then improves the implementation. Once the initializer has been executed, there is no need to keep the initializer lambda and everything it captured.So it sets initializer = null after initialization.
+Eg.
+suspend fun makeConnection(): String {
+    println("Creating connection")
+    delay(1000)
+    return "Connection"
+}
+val getConnection = suspendLazy {
+    makeConnection()
+}
+println(getConnection())
+println(getConnection())
+println(getConnection())
+Output:
+Creating connection
+Connection
+Connection
+Connection
+The expensive initialization happens only once.
+
+Recipe 3: Reusing Connections:
+Suppose a Flow needs a persistent connection, such as WebSocket, RSocket, database observation and another long-running data source. Creating a separate connection for every observer is wasteful. If all observers need the same data, we would rather have one connectionn.We use shareIn() for this.
+Eg.
+class LocationService(
+    locationDao: LocationDao,
+    scope: CoroutineScope
+) {
+    private val locations =
+        locationDao.observeLocations()
+            .shareIn(
+                scope = scope,
+                started = SharingStarted.WhileSubscribed()
+            )
+    fun observeLocations(): Flow<List<Location>> =
+        locations
+}
+Now several observers can use the same shared Flow. SharingStarted.WhileSubscribed() means the upstream connection remains active while it has subscribers.This is useful for expensive persistent connections.Sometimes each connection depends on a key.We need to reuse the connection for the same key.So we need to create ConnectionPool.
+Eg.
+class ConnectionPool<K, V>(
+    private val scope: CoroutineScope,
+    private val builder: (K) -> Flow<V>,
+) {
+    private val connections = mutableMapOf<K, Flow<V>>()
+    fun getConnection(key: K): Flow<V> =
+        synchronized(this) {
+            connections.getOrPut(key) {
+                builder(key).shareIn(
+                    scope,
+                    started = SharingStarted.WhileSubscribed()
+                )
+            }
+        }
+}
+
+Recipe 4: Coroutine Races: Sometimes we have multiple ways to get the same result. We can call both and use whichever responds first.This is called a race. The source introduces a raceOf() function for this pattern.
+Syntax:
+suspend fun <T> raceOf(
+    racer: suspend CoroutineScope.() -> T,
+    vararg racers: suspend CoroutineScope.() -> T
+): T = coroutineScope {
+    select {
+        (listOf(racer) + racers).forEach { racer ->
+            async { racer() }.onAwait {
+                coroutineContext.job.cancelChildren()
+                it
+            }
+        }
+    }
+}
+The important functions here are:
+1.coroutineScope
+2.async
+3.select
+4.onAwait
+5.cancelChildren
+Suppose:
+raceOf(
+    { serverA() },
+    { serverB() }
+)
+Both are started and select waits for one result to become available. The winner is selected and then coroutineContext.job.cancelChildren() cancels the remaining racers.
+Eg.
+suspend fun a(): String {
+    delay(1000)
+    return "A"
+}
+suspend fun b(): String {
+    delay(2000)
+    return "B"
+}
+suspend fun c(): String {
+    delay(3000)
+    return "C"
+}
+
+Recipe 5: Retrying a Suspending Process: Real applications can fail temporarily.Instead of immediately failing, we may want to try again. For Flow, we learned retry() and retryWhen(). For a normal suspending function, there isn't a standard equivalent built into the same way, so we can implement one.
+Syntax:
+inline fun <T> retry(operation: () -> T): T {
+    while (true) {
+        try {
+            return operation()
+        } catch (e: Throwable) {
+            // retry
+        }
+    }
+}
+This continues until the operation succeeds.
+Eg.
+suspend fun requestData(): String {
+    if (Random.nextInt(0, 10) == 0) {
+        return "ABC"
+    } else {
+        error("Error")
+    }
+}
+println(
+    retry {
+        requestData()
+    }
+)
+The operation keeps trying until it succeeds. Real retry logic often needs Conditions for retrying, A maximum number of retries, Increasing delay, Logging and  Special handling for cancellation The source specifically highlights these concerns.
+The implementation checks:
+if (
+    e is CancellationException ||
+    !predicate(e, retries++)
+) {
+    throw e
+}
+This means a cancellation exception should not be retried because cancellation is part of the coroutine cancellation mechanism. If we catch cancellation and retry forever, we can break the expected cancellation behavior.
