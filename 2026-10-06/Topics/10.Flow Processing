@@ -1,0 +1,138 @@
+Most of the Flow Operations are the same as the Collection.
+map: transforms. Same as Collection Processing Counter Part.
+Syntax: varriable.map{operation}
+filter: filters according to the given conditions.  Same as Collection Processing Counter Part.
+Syntax: varriable.filter{Condition}
+take: Take the given nummber of elements.  Same as Collection Processing Counter Part.
+Syntax: variable.take(number)
+drop: Ignore the number of element and take the rest.  Same as Collection Processing Counter Part.
+Syntax: variable.drop()
+merge: merges two given flow.  Same as Collection Processing Counter Part.
+Syntax: merge(flow1,flow2)
+zip: merges but we need to give the format it is merged in. Flow stops opperation when one of the flow empties.
+Syntax:flow1.zip(flow2) { f1, f2 -> "${f1}_${f2}" }
+combine: same as flow but thhis doesn't end when one is finsih and uses the last element of the finished flow to complete opperation.
+Syntax:flow1.combine(flow2) { f1, f2 -> "${f1}_${f2}" }
+fold: Same as Collection Processing Counter Part.
+Syntax: variable.fold(starting) { acc, i -> acc + i }
+scan: Same as fold but provides the result after each step
+Syntax: variable.scan(starting) { acc, i -> acc + i }
+flatMapConcat: flatMapConcat takes each value from a Flow, creates another Flow from it, and processes those produced flows one after another. So, the next Flow starts only after the previous Flow finishes.
+Example:
+fun flowFrom(elem: String) = flowOf(1, 2, 3)
+    .onEach { delay(1000) }
+    .map { "${it}_$elem" }
+suspend fun main() {
+    flowOf("A", "B", "C")
+        .flatMapConcat { flowFrom(it) }
+        .collect { println(it) }
+}
+Output:
+1_A
+2_A
+3_A
+1_B
+2_B
+3_B
+1_C
+2_C
+3_C
+flatMapMerge:flatMapMerge processes the produced Flows concurrently.
+Example:
+flowOf("A", "B", "C")
+    .flatMapMerge { flowFrom(it) }
+    .collect { println(it) }
+Output:
+1_A
+1_B
+1_C
+2_A
+2_B
+2_C
+3_A
+3_B
+3_C
+You can control how many inner Flows run at the same time:
+.flatMapMerge(concurrency = 2) {
+    flowFrom(it)
+}
+The default concurrency is 16.Useful when you want to perform requests for many Flow elements while limiting how many requests happen simultaneously.
+flatMapLatest: flatMapLatest keeps the latest Flow. When a new value arrives, the previous Flow is cancelled/forgotten and the new Flow becomes active.
+Example:
+flowOf("A", "B", "C")
+    .flatMapLatest { flowFrom(it) }
+    .collect { println(it) }
+The latest value "C" gets the final Flow processing. You usually don't want old searches to finish. You want only the latest search.
+retry: retry restarts a Flow when an exception occurs.
+flow
+    .retry(...)
+Retry is implemented using retryWhen.
+Syntax
+.retry(retries = 3) {
+    true
+}
+retryWhen:retryWhen gives more control over retrying. It receives cause and attempt.
+Example:
+.retryWhen { cause, attempt ->
+    println("Attempt: $attempt")
+    true
+}
+distinctUntilChanged:distinctUntilChanged removes consecutive duplicate values.
+Example:
+flowOf(1, 2, 2, 3, 2, 1, 1, 3)
+    .distinctUntilChanged()
+    .collect { print(it) }
+Output:
+123213
+Only duplicates that are next to each other are removed. It does not remove every duplicate.
+distinctUntilChangedBy: Use this when you want to compare values using a specific property.
+Syntax:
+users
+    .distinctUntilChangedBy { it.id }
+Example:
+data class User(
+    val id: Int,
+    val name: String
+)
+users.distinctUntilChangedBy { it.id }
+Now consecutive users with the same id are treated as duplicates.
+distinctUntilChanged with Custom Comparison: You can also provide your own comparison.
+Syntax:
+.distinctUntilChanged { previous, next ->
+    previous.id == next.id ||
+    previous.name == next.name
+}
+The lambda decides whether the previous and next values should be treated as equal.
+collect:collect is the most common terminal operation used to consume a Flow.
+Syntax:
+flow.collect {
+    println(it)
+}
+Example:
+flowOf(1, 2, 3)
+    .collect {
+        println(it)
+    }
+Output:
+1
+2
+3
+Terminal operations are suspending functions and finish when the Flow completes.
+count:Counts the number of values emitted by the Flow.
+Syntax:
+val count = flow.count()
+Example:
+val flow = flowOf(1, 2, 3, 4)
+println(flow.count())
+Output:
+4
+first:Returns the first emitted value.
+val first = flow.first()
+Example:
+flowOf(1, 2, 3, 4)
+    .first()
+Output:
+1
+firstOrNull: Similar to first, but can return null when there is no value.
+Syntax:
+val value = flow.firstOrNull()
