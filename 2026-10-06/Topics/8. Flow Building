@@ -1,0 +1,34 @@
+Each flow needs to start somewhere. There are many ways to do this, depending on what we need. 
+The simplest way to create a flow is by using the flowOf function, where we just define what values this flow should have.
+Syntax Eg.
+suspend fun main() {
+    flowOf(1, 2, 3, 4, 5)
+    .collect { print(it) } // 12345
+}
+At times, we might also need a flow with no values. For this, we have the emptyFlow() function.
+suspend fun main() {
+    emptyFlow<Int>()
+    .collect { print(it) } // (nothing)
+}
+We can also convert every Iterable, Iterator or Sequence into a Flow using the asFlow function. These functions produce a flow of elements that are available immediately. They are useful to start a flow of elements that we can then process using the flow processing functions.
+Flow is frequently used to represent a single value delayed in time. So, it makes sense to convert a suspending function into a flow. The result of this function will be the only value in this flow. For that, there is the asFlow extension function, which works on function types (both suspend () -> T and () -> T). To convert a regular function,we need to reference it first.We do this using :: in Kotlin. 
+If we use Reactive Streams in our application, we don’t need to make big changes in our code. All objects like Flux, Flowable or Observable implement the Publisher interface, which can be converted to Flow with the asFlow function from the kotlinx-coroutines-reactive library. To convert the other way around, you need more specific libraries. With kotlinx-coroutines-reactor, you can convert Flow to Flux. Withkotlinx-coroutines-rx3 (or  kotlinx-coroutines-rx2), you can convert Flow to Flowable or Observable.
+The most popular way to make a flow is using the flow builder which behaves similarly to sequence builder for building a sequence, or produce builder for building a channel. We start the builder with the flow function call, and inside its lambda expression we emit the next values using the emit function. We can also use emitAll to emit all the values from Channel or Flow (emitAll(flow) is shorthand for flow.collect { emit(it) }).
+Syntax Eg.
+fun makeFlow(): Flow<Int> = flow {
+    repeat(3) { num ->
+        delay(1000)
+        emit(num)
+    }
+}
+suspend fun main() {
+    makeFlow()
+    .collect { println(it) }
+}
+The flow builder is the most basic way to create a flow. All other options are based on it. When we call a flow builder, we just create an object. However, calling collect means calling the block function on the collector interface. The block function in this example is the lambda expression defined at 1. Its receiver is the collector, which is defined at 2 with a lambda expression. When we define a function interface (like FlowCollector) using a lambda expression, the body of this lambda expression will be used as the implementation of the only function expected by this interface, that is emit in this case. So, the body of the emit function is println(value). Thus, when we call collect, we start executing the lambda expression defined at 1, and when it calls emit, it calls the lambda expression defined at 2. This is how flowworks. Everything else is built on top of that. 
+Flow is a cold data stream, so it produces values on demand when they are needed. If you think of the allUsersFlow presented above, the next page of users will be requested when the receiver asks for it. This is desired in some situations. For example, imagine that we are looking for a specific user. If it is in the first page, we don’t need to request any more pages. On the other hand, we might have cases in which we want to fetch pages in advance when we are still processing the elements. Doing this in the presented case could lead to more network calls, but it might also produce a faster result. To achieve this, we would need independent production and consumption. Such independence is typical of hot data streams, like channels. So, we need a hybrid of Channel and Flow. Yes, this is supported: we just need to use the channelFlow function, which is like Flow because it implements the Flow interface. This builder is a regular function, and it is started with a terminal operation (like collect). It is also like a Channel because once it is started, it produces the values in a separate coroutine without waiting for the receiver. Therefore, fetching the next pages and checking users happens concurrently. A typical use case for channelFlow is when we need to independently compute values. To support this, channelFlow creates a coroutine scope, so we can directly start coroutine builders like launch.  Just like all the other coroutines, channelFlow doesn’t finish until all its children are in a terminal state.
+For a very long time, there was no difference between channelFlow and callbackFlow. In version 1.3.4, small changes were introduced to make it less error-prone when using callbacks. However, the biggest difference is in how people understand these functions is that callbackFlow is for wrapping callbacks.Inside callbackFlow, we also operate on ProducerScope<T>. Here are a few functions that might be useful for wrapping callbacks:
+1>awaitClose { ... } - a function that suspends until the channel is closed. Once it is closed, it invokes its argument. awaitClose is very important for callbackFlow. Take a look at the example below. Without awaitClose, the coroutine will end immediately after registering a callback. This is natural for a coroutine: its body has ended and it has no children to wait for, so it ends. We use awaitClose (even with an empty body) to prevent this, and we listen for elements until the channel is closed in some other way.
+2>trySendBlocking(value) - similar to send, but it is blocking instead of suspending, so it can be used on non-suspending functions.
+3>close() - ends this channel.
+4>cancel(throwable) - ends this channel and sends an exception to the flow.
