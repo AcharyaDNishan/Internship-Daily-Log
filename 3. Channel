@@ -1,0 +1,24 @@
+The Channel API was added as an inter-coroutine communication primitive. Channel supports any number of senders and receivers, and every
+value that is sent to a channel is received only once.
+Coroutine 1 --->Channel--->Coroutine 2
+            SEND.      RECEIVE
+Coroutine 2\              /Coroutine 5
+Coroutine 1 --->Channel--->Coroutine 4
+Coroutine 3/SEND      RECEIVE
+Channel is an interface that implements two other interfaces, SendChannel, which is used to send elements (adding elements) and to close the channel and ReceiveChannel, which receives (or takes)the elements. Thanks to this distinction, we can expose just ReceiveChannel or SendChannel in order to restrict the channel entry points. When we try to receive and there are no elements in the channel, the coroutine is suspended until the element is available. , send will be suspended when the channel reaches its capacity. We will soon see that most channels have limited capacity.
+To send or receive from a non-suspending function, we can use trySend and tryReceive. Both operations are immediate and return ChannelResult, which contains information about the success or failure of the operation, as well as its result. Use trySend and tryReceive only for channels with limited capacity because they will not work for the rendezvous channel. A channel might have any number of senders and receivers. However, the most common situation is when there is one coroutine on both sides of the channel.
+The common problem with this way of sending elements is that it is easy to forget to close the channel, especially in the case of exceptions. If one coroutine stops producing because of an exception, the other will wait for elements forever. It is much more convenient to use the produce function, which is a coroutine builder that returns ReceiveChannel.
+Depending on the capacity size we set, we distinguish four types of channels:
+1>Unlimited - channel with capacity Channel.UNLIMITED that has an unlimited capacity buffer, and send never suspends.
+2>Buffered - channel with concrete capacity size or Channel.BUFFERED (which is 64 by default and can be overridden by setting the kotlinx.coroutines.channels.defaultBuffer system property in JVM).
+3>Rendezvous(default) - channel with capacity 0 or Channel.RENDEZVOUS (which is equal to 0), meaning that an exchange can happen only if sender and receiver meet (so it is like a book exchange spot, instead of a bookshelf).
+4>Conflated - channel with capacity Channel.CONFLATED which has a buffer of size 1, and each new element replaces the previous one.
+To customize channels further, we can control what happens when the buffer is full (onBufferOverflowparameter). There are the following options:
+1>SUSPEND (default) - when the buffer is full, suspend on the send method.
+2>DROP_OLDEST - when the buffer is full, drop the oldest element.
+3>DROP_LATEST - when the buffer is full, drop the latest element.
+One more Channel function is onUndeliveredElement. It is called when an element couldn’t be handled for some reason. Most often this means that a channel was closed or cancelled, but it might also happen when send, receive, receiveOrNull, or hasNext throw an error. We generally use it to close resources that are sent by this channel.
+Multiple coroutines can receive from a single channel; however, to receive them properly we should use a for-loop because consumeEach is not safe to use from multiple coroutines. Multiple coroutines can send to a single channel. Sometimes, we need to merge multiple channels into one. For that, we might find the following function useful as it merges multiple channels using the produce function.
+Sometimes we set two channels such that one produces elements based on those received from another. In such cases, we call it a pipeline.
+Channels are useful when different coroutines need to communicate with each other. They guarantee no conflicts, no problem with the shared state and fairness. When we set up a pipeline, we can use the previously defined fanIn function to merge the results produced by the different baristas into one.
+A typical case in which we use channels is when values are produced on one side, andwewant to process them on the other side.  However, in most of these cases it’s better to use channelFlow or callbackFlow, both of which are a hybrid of Channel and Flow.
