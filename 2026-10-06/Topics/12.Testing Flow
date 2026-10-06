@@ -1,0 +1,159 @@
+The rules for testing suspending functions are quite simple. 
+Suppose a function transforms a repository Flow:
+fun observeAppointments(): Flow<List<Appointment>> =
+    appointmentRepository
+        .observeAppointments()
+        .filterIsInstance<AppointmentsUpdate>()
+        .map { it.appointments }
+        .distinctUntilChanged()
+        .retry {
+            it is ApiException && it.code in 500..599
+        }
+The tests should check each important behavior:
+1>keep only appointment updates
+2>remove repeated values
+3>retry for 5XX API errors
+Using flowOf() as test data:
+val repo = FakeAppointmentRepository(
+    flowOf(
+        AppointmentsConfirmed,
+        AppointmentsUpdate(listOf(anAppointment1)),
+        AppointmentsUpdate(listOf(anAppointment2)),
+        AppointmentsConfirmed
+    )
+)
+Then collect the result:
+val result = service.observeAppointments().toList()
+And compare it:
+assertEquals(expected, result)
+flowOf() is useful because it creates a finite Flow where time is not important.
+runTest(): For Flow tests involving coroutines or delays:
+@Test
+fun testSomething() = runTest {
+    // test code
+}
+runTest provides the test coroutine environment and is especially important when testing time-dependent Flow behavior.
+A simple toList() test may not detect an unwanted delay.
+Example:
+.onEach { delay(1000) }
+A normal list-style test can still pass even though the Flow became slower. To test timing:
+val result = service.observeAppointments()
+    .map { currentTime to it }
+    .toList()
+Then verify expected times:
+assertEquals(
+    listOf(
+        1000L to listOf(anAppointment1),
+        2000L to listOf(anAppointment2),
+        3000L to listOf(anAppointment1)
+    ),
+    result
+)
+This checks when values are emitted, not only which values are emitted.
+Retrying can produce an infinite Flow, so directly using toList() can never finish. Use take() to limit the number of emitted elements:
+val result = service.observeAppointments()
+    .take(3)
+    .toList()
+Example:
+flow {
+    emit(AppointmentsUpdate(listOf(anAppointment1)))
+    throw ApiException(502, "Some message")
+}
+Because the exception is retryable, the first appointment can appear repeatedly.We should also test that non-API exceptions are not retried and API exceptions with non-5XX codes are not retried. We can aslo use catch to collect the final exception as part of the test result.
+val result = service.observeAppointments()
+    .catch<Any> { emit(it) }
+    .toList()
+StateFlow and SharedFlow are often infinite. They do not normally complete, so .toList() can wait forever. When using runTest, the book recommends using backgroundScope for these long-running flows.
+This can hang:
+val result = service.observeMessages("0")
+    .toList()
+because the Flow never completes.
+It can hide ordering or unexpected extra values because it only checks the requested number of elements.
+Another approach is to store emitted values:
+val emittedMessages = mutableListOf<Message>()
+service.observeMessages("0")
+    .onEach { emittedMessages.add(it) }
+    .launchIn(backgroundScope)
+Then test at different times:
+delay(1)
+assertEquals(
+    listOf(Message("0", "A")),
+    emittedMessages
+)
+Later:
+delay(1000)
+assertEquals(
+    listOf(
+        Message("0", "A"),
+        Message("0", "C")
+    ),
+    emittedMessages
+)
+This gives more control over what was emitted and when.
+Create a helper function for collecting a Flow only for a certain duration:
+suspend fun <T> Flow<T>.toListDuring(
+    duration: Duration
+): List<T> = coroutineScope {
+    val result = mutableListOf<T>()
+    val job = launch {
+        this@toListDuring.collect(result::add)
+    }
+    delay(duration)
+    job.cancel()
+    return@coroutineScope result
+}
+Usage:
+val emittedMessages =
+    service.observeMessages("0")
+        .toListDuring(1.milliseconds)
+This is a simpler alternative when you want to observe a Flow for a specific amount of time.
+Turbine, a library designed to simplify Flow testing, can aslo be used.
+Example:
+val messagesTurbine =
+    service.observeMessages("0")
+        .testIn(backgroundScope)
+assertEquals(
+    Message("0", "A"),
+    messagesTurbine.awaitItem()
+)
+assertEquals(
+    Message("0", "C"),
+    messagesTurbine.awaitItem()
+)
+messagesTurbine.expectNoEvents()
+Suppose shareIn() should ensure that only one connection to the source exists.
+private val source = messagesSource
+    .shareIn(
+        scope = scope,
+        started = SharingStarted.WhileSubscribed()
+    )
+You can count active connections with:
+.onStart { connectionsCounter++ }
+.onCompletion { connectionsCounter-- }
+Then start multiple observers:
+service.observeMessages("0").launchIn(backgroundScope)
+service.observeMessages("1").launchIn(backgroundScope)
+service.observeMessages("0").launchIn(backgroundScope)
+service.observeMessages("2").launchIn(backgroundScope)
+Finally:
+assertEquals(1, connectionsCounter)
+This verifies that only one source connection is active.
+Another useful approach for ViewModels is to use a MutableSharedFlow as the test source.
+val source = MutabeSharedFlow<Message>()
+Pass it into a fake service:
+val viewModel = ChatViewModel(
+    messagesService = FakeMessagesService(source)
+)
+Start the ViewModel:
+viewModel.start("0")
+Initially:
+assertEquals(null, viewModel.lastMessage.value)
+assertEquals(emptyList(), viewModel.messages.value)
+Then emit test data:
+source.emit(
+    Message(fromUserId = "0", text = "ABC")
+)
+Check the ViewModel:
+assertEquals("ABC", viewModel.lastMessage.value)
+assertEquals(listOf("ABC"), viewModel.messages.value)
+This allows the test to directly control which messages enter the ViewModel.
