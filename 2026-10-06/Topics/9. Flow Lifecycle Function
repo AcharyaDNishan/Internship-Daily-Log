@@ -1,0 +1,109 @@
+Flow can be imagined as a pipe in which requests for next values flow in one direction, and the corresponding produced values flow in the other direction.When flow is completed or an exception occurs, this information is also propagated and it closes the intermediate steps on the way. So, as they all flow, we can listen for values, exceptions, or other characteristic events (like starting or completing). To do this, we use methods such as onEach, onStart, onCompletion, onEmpty and catch. 
+onEach: To react to each flowing value, we use the onEach function.
+Syntax:
+suspend fun main() {
+    flowOf(1, 2, 3, 4)
+        .onEach { print(it) }
+        .collect() // 1234
+}
+The onEach lambda expression is suspending, and elements are processed one after another in order (sequentially). So, if we add delayin onEach, we will delay each value as it flows.
+onStart: The onStart function sets a listener that should be called immediately once the flow is started, i.e., once the terminal operation is called. It is important to note that onStart does not wait for the first element: it is called when we request the first element.
+Syntax:
+suspend fun main() {
+    flowOf(1, 2)
+        .onEach { delay(1000) }
+        .onStart { println("Before") }
+        .collect { println(it) }
+}
+// B
+It is good to know that inonStart (as well as inonCompletion, onEmpty and catch) we can emit elements. Such elements will flow downstream from this place.
+onCompletion:There are a few ways in which a flow can be completed. The most common one is when the flow builder is done (i.e., the last element has been sent), although this also happens in the case of an uncaught exception or a coroutine cancellation. In all these cases, we can add a listener for flow completion by using the onCompletion method.
+Syntax:
+suspend fun main() = coroutineScope {
+    flowOf(1, 2)
+        .onEach { delay(1000) }
+        .onCompletion { println("Completed") }
+        .collect { println(it) }
+}
+// (1 sec)
+// 1
+// (1 sec)
+// 2
+// Completed
+In Android, we often use onStart to show a progress bar (the indicator that we are waiting for a network response), and we use onCompletion to hide it.
+onEmpty: A flow might complete without emitting any value, which might be an indication of an unexpected event. For such cases, there is the onEmpty function, which invokes the given action when this flow completes without emitting any elements. onEmpty might then be used to emit some default value.
+suspend fun main() = coroutineScope {
+    flow<List<Int>> { delay(1000) }
+        .onEmpty { emit(emptyList()) }
+        .collect { println(it) }
+}
+// (1 sec)
+// []
+catch: At any point of flow building or processing, an exception might occur. Such an exception will flow down, closing each processing step on the way; however, it can be caught and managed. To do so,we can use the catch method. This listener receives the exception as an argument and allows you to perform recovering operations.
+Syntax:
+class MyError : Throwable("My error")
+val flow = flow {
+emit(1)
+emit(2)
+throw MyError()
+}
+suspend fun main(): Unit {
+flow.onEach { println("Got $it") }
+.catch { println("Caught $it") }
+.collect { println("Collected $it") }
+}
+onEach does not react to an exception. The same happens with other functions like map, filter etc. Only the onCompletion handler will be called. The catch method stops an exception by catching it. The previous steps have already been completed, but catch can still emit new values and keep the rest of the flow alive.
+val flow = flow {
+emit("Message1")
+throw MyError()
+}
+suspend fun main(): Unit {
+flow.catch { emit("Error") }
+.collect { println("Collected $it") }
+}
+In Android, we often use catch to show exceptions that happened in a flow. We could also use catch to emit default data to display on the screen,
+such as an empty list.
+Uncaught exceptions in a flow immediately cancel this flow, and collect rethrows this exception. This behavior is typical of suspending functions, and coroutineScope behaves the same way. Exceptions can be caught outside flow using the classic try-catch block.
+val flow = flow {
+emit("Message1")
+throw MyError()
+}
+suspend fun main(): Unit {
+try {
+flow.collect { println("Collected $it") }
+} catch (e: MyError) {
+println("Caught")
+}
+}
+If there is an exception in the collect, it won’t be caught, and an error will be thrown.It is common practice to move the operation from collect to onEach and place it before the catch. This is specifically useful if we suspect that collect might raise an exception. If we move the operation from collect, we can be sure that catch will catch all exceptions.
+val flow = flow {
+emit("Message1")
+emit("Message2")
+}
+suspend fun main(): Unit {
+flow.onStart { println("Before") }
+.onEach { throw MyError() }
+.catch { println("Caught $it") }
+.collect()
+}
+flowOn: Lambda expressions used as arguments for flow operations (like onEach, onStart, onCompletion, etc.) and its builders (like flow or channelFlow) are all suspending in nature. Suspending functions need to have a context and should be in relation to their parent (for structured concurrency). So, you might be wondering where these functions take their context from. The answer is: from the context where collect is called.
+fun usersFlow(): Flow<String> = flow {
+repeat(2) {
+val ctx = currentCoroutineContext()
+val name = ctx[CoroutineName]?.name
+emit("User$it in $name")
+}
+}
+suspend fun main() {
+val users = usersFlow()
+withContext(CoroutineName("Name1")) {
+users.collect { println(it) }
+}
+withContext(CoroutineName("Name2")) {
+users.collect { println(it) }
+}
+The terminal operation call requests elements from upstream, thereby propagating the coroutine context. However, it can also be modified by the flowOn function.flowOn works only for functions that are upstream in the flow.
+launchIn: collect is a suspending operation that suspends a coroutine until the flow is completed. It is common to wrap it with a launch builder so that flow processing can start on another coroutine. To help with such cases, there is the launchIn function, which launches collect in a new coroutine on the scope object passed as the only argument.
+fun <T> Flow<T>.launchIn(scope: CoroutineScope): Job =
+scope.launch { collect() }
+launchIn is often used to start flow processing in a separate coroutine.
