@@ -1,0 +1,40 @@
+When we create a project in Anndroid Studio, it will create a MainActivity.kt automatically.
+Activy is a component for one or more screen inn our apps and the unit user innteract with. The activity Lifecycle states are:
+onCreate()- state when the activity is created.
+onStart()- state when the activity is opened/started.
+onResume()- state for when the activity has returned after being paused.
+onPause()- state when the activity is inn view but not active.
+onStop()- state when activity is runnning in the Background.
+onDestroy()- state when activity is closed.
+
+onStop() and onPause() have similar use but onPause is used when the activity is still in view.
+syntax:
+override fun ${state we wannt to edit}(){
+        super.{$state}()
+        //opreation
+    }
+
+Lifecycle:
+
+                                    Activity Launched
+                                        |
+                                        V
+----------------------------------->onCreate()
+|                                       |
+|                                       V
+|                                   onStart()<--------------------------------- onRestart()
+App Process Killed                      |                                              |
+|                                       V                                              |
+|                                   onResume()<-------------                           |
+|                                        |Activity Running. |                           |
+|                                      V.                 |                           |
+|                                   onPause()---------------                           |
+|                                      |                                              |
+|                                      V.                                             |
+-------------------------------------onStop()--------------------------------------------
+                                        |
+                                        V
+                                    onDestroy()
+                                        |
+                                        V
+                                    Activity Shutdown
