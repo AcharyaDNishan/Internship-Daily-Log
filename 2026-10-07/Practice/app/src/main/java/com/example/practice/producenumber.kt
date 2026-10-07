@@ -2,21 +2,26 @@ package com.example.practice
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.*
+import kotlin.coroutines.*
+public val b=0
 suspend fun firstbird(){
-    for (i in 1..4) {
+    while(b==0){
+        val cor: CoroutineContext= CoroutineName("firstbird")
         delay(1000)
-        println("Coo")
+        println("${cor.get(CoroutineName)}=Coo")
     }
 }
 suspend fun secondbird(){
-    for (i in 1..4) {
+    while(b==0){
+        val cor: CoroutineContext= CoroutineName("secondbad")
         delay(2000)
-        println("Caw")
+        println("${cor.get(CoroutineName)}=Caw")
     }
 }
 suspend fun thirdbird(){
-    for (i in 1..4) {
+    while(b==0){
+        val cor: CoroutineContext= CoroutineName("thirdbird")
         delay(3000)
-        println("Chirp")
+        println("${cor.get(CoroutineName)}=Chirp")
     }
 }

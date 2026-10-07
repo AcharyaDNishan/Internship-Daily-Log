@@ -21,9 +21,11 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         GlobalScope.launch(Dispatchers.Main) {
-            val a=async{firstbird()}
-            val b=async{secondbird()}
-            val c=async{thirdbird()}
+            withTimeout(10_000){
+                val a = async { firstbird() }
+                val b = async { secondbird() }
+                val c = async { thirdbird() }
+            }
         }
         setContent {
             PracticeTheme {
