@@ -1,0 +1,39 @@
+Gradle is just a task runner. It runs the right task in right order to achieve a certain order. 
+We need to type something like the following in Gradle to print something in the Build Tab after syncing.
+apply<HWPlugin>()
+class HWPlugin : Plugin<Project>{
+    override fun apply(target: Project)=println("Hello World")
+}
+It has only single entry point ie apply.
+If we use ./gradlew, it shows all the task the graddle does.
+build.gradle.kts=built automatically when creating the project.
+Plugins are used in build.gradle.kts. It is a kotlin class. Each pluggin has an id and whenn we don't want to apply the plugin wr write False on them.
+Syntax:
+plugins{
+    alias(plugin) apply true/False
+}
+build.gradle.kts has:
+plugin
+android-Only applies to android.
+namespace-package name.
+CompikeSDK-android version code should compile to.
+default configg- default configuration of the app. Under this there is:
+1>minSDK=mminimum api the app runs on.
+2>targetSDK=highest SDK Level our app is intended for.
+3>versionCode=the versionn used to detect an update.
+4>versionName=human readable version namme.
+Compile Optionn-how the app should be compiled.
+Kotlin Option-same as compile Option.
+Dependencies-Library you want to include.
+Every mmodule/library comes with a gradle file. It is so because the module mmay require different dependencies than our app gradle. Library Notation:
+dependencies{
+    implementationn(project("library name"))
+}
+without this, we would not be able to use the library or anythingg related into out MainActivity. There will be logic and configuration that are different in all of the mmodule and somme that are same.
+buildtype-Stage where app is runninng in durinng development. Two buildtype: Debug and Release
+isMinifyEnable-mmakes code harder to unnderstande whenn trying to reverse engineer. 
+We can also create a new build type using create()
+buildConfigfield()-builsa primitive field you can access in your bbuild, that still mmight differ with  build type.
+We need to engage buildconfig() in build features().
+productflavours()=simple to buildtype but for release where there are many type of data. 
+Scoresets are the files gradle look for code.
