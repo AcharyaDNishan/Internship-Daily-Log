@@ -5,44 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="7d81ae45-057d-4722-81f9-a1fb99ca8449" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/../../2026-10-07/Practice/.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../2026-10-07/Practice/app/.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../2026-10-07/Practice/app/build.gradle.kts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../2026-10-07/Practice/app/src/androidTest/java/com/example/practice/ExampleInstrumentedTest.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../2026-10-07/Practice/app/src/main/AndroidManifest.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../2026-10-07/Practice/app/src/main/java/com/example/practice/MainActivity.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../2026-10-07/Practice/app/src/main/java/com/example/practice/ui/theme/Color.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../2026-10-07/Practice/app/src/main/java/com/example/practice/ui/theme/Theme.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../2026-10-07/Practice/app/src/main/java/com/example/practice/ui/theme/Type.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../2026-10-07/Practice/app/src/main/keepRules/rules.keep" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../2026-10-07/Practice/app/src/main/res/drawable/ic_launcher_background.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../2026-10-07/Practice/app/src/main/res/drawable/ic_launcher_foreground.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../2026-10-07/Practice/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../2026-10-07/Practice/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../2026-10-07/Practice/app/src/main/res/mipmap-hdpi/ic_launcher.webp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../2026-10-07/Practice/app/src/main/res/mipmap-hdpi/ic_launcher_round.webp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../2026-10-07/Practice/app/src/main/res/mipmap-mdpi/ic_launcher.webp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../2026-10-07/Practice/app/src/main/res/mipmap-mdpi/ic_launcher_round.webp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../2026-10-07/Practice/app/src/main/res/mipmap-xhdpi/ic_launcher.webp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../2026-10-07/Practice/app/src/main/res/mipmap-xhdpi/ic_launcher_round.webp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../2026-10-07/Practice/app/src/main/res/mipmap-xxhdpi/ic_launcher.webp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../2026-10-07/Practice/app/src/main/res/mipmap-xxhdpi/ic_launcher_round.webp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../2026-10-07/Practice/app/src/main/res/mipmap-xxxhdpi/ic_launcher.webp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../2026-10-07/Practice/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.webp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../2026-10-07/Practice/app/src/main/res/values/colors.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../2026-10-07/Practice/app/src/main/res/values/strings.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../2026-10-07/Practice/app/src/main/res/values/themes.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../2026-10-07/Practice/app/src/main/res/xml/backup_rules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../2026-10-07/Practice/app/src/main/res/xml/data_extraction_rules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../2026-10-07/Practice/app/src/test/java/com/example/practice/ExampleUnitTest.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../2026-10-07/Practice/build.gradle.kts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../2026-10-07/Practice/gradle.properties" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../2026-10-07/Practice/gradle/libs.versions.toml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../2026-10-07/Practice/gradle/wrapper/gradle-wrapper.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../2026-10-07/Practice/gradle/wrapper/gradle-wrapper.properties" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../2026-10-07/Practice/gradlew" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../2026-10-07/Practice/gradlew.bat" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../2026-10-07/Practice/settings.gradle.kts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../../2026-10-07/Practice/app/src/main/java/com/example/practice/producenumber.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/gradle.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/gradle.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../2026-10-07/Practice/app/src/main/java/com/example/practice/MainActivity.kt" beforeDir="false" afterPath="$PROJECT_DIR$/../../2026-10-07/Practice/app/src/main/java/com/example/practice/MainActivity.kt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -78,10 +44,22 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/../.." />
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 2,
-  "fromUser": false
+  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
+  "lastFilter": {
+    "state": "OPEN",
+    "assignee": "AcharyaDNishan"
+  }
 }]]></component>
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/AcharyaDNishan/Internship-Daily-Log.git",
+    "accountId": "be0ef998-299c-4a8c-8e5e-8c2b3e502066"
+  }
+}]]></component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 2,
+  &quot;fromUser&quot;: false
+}</component>
   <component name="ProjectId" id="3KLyRKvxgqcUTUF8yZxr8ZXbgFz" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
@@ -94,6 +72,7 @@
     "RunOnceActivity.cidr.known.project.marker": "true",
     "RunOnceActivity.git.unshallow": "true",
     "RunOnceActivity.readMode.enableVisualFormatting": "true",
+    "android.gradle.sync.needed": "true",
     "cf.first.check.clang-format": "false",
     "cidr.known.project.marker": "true",
     "git-widget-placeholder": "main",
@@ -105,7 +84,6 @@
 }]]></component>
   <component name="RunManager">
     <configuration name="app" type="AndroidRunConfigurationType" factoryName="Android App" activateToolWindowBeforeRun="false">
-      <module name="practice.app" />
       <option name="ANDROID_RUN_CONFIGURATION_SCHEMA_VERSION" value="1" />
       <option name="DEPLOY" value="true" />
       <option name="DEPLOY_APK_FROM_BUNDLE" value="false" />

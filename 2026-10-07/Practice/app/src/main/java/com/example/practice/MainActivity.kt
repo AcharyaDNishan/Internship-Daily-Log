@@ -12,11 +12,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.practice.ui.theme.PracticeTheme
+import kotlinx.coroutines.*
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.channels.*
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        GlobalScope.launch(Dispatchers.Main) {
+            val a=async{firstbird()}
+            val b=async{secondbird()}
+            val c=async{thirdbird()}
+        }
         setContent {
             PracticeTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
