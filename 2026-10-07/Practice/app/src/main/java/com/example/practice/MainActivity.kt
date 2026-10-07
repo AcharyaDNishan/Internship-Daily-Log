@@ -17,8 +17,17 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.*
 
 class MainActivity : ComponentActivity() {
+    override fun onStart(){
+        super.onStart()
+        println("Started.")
+    }
+    override fun onPause(){
+        super.onPause()
+        println("Paused.")
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        println("Created.")
         enableEdgeToEdge()
         GlobalScope.launch(Dispatchers.Main) {
             withTimeout(10_000){
