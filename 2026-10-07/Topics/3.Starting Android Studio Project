@@ -1,0 +1,3 @@
+We have to start in MainActivity.kt.
+Then we use GlobalScope and write what has to be print into it. Whatever is to be printed here can be viewed in Log/LogCat after build.
+We can also create a different file for a user defined function.
