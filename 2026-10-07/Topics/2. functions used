@@ -1,0 +1,204 @@
+produce() — starts a coroutine that produces values to a ReceiveChannel.
+coroutineScope() — creates a structured child scope and waits for its children.
+supervisorScope() — creates a scope where sibling failures are isolated.
+currentCoroutineContext() — gets the current coroutine context from a suspending function.
+awaitAll() — waits for multiple Deferred values.
+joinAll() — waits for multiple jobs.
+SupervisorJob() — creates a supervisor job.
+suspendCoroutineUninterceptedOrReturn() — low-level suspension primitive discussed under the hood.
+interceptContinuation() — continuation interception mechanism discussed under the hood.
+releaseInterceptedContinuation() — releases an intercepted continuation.
+SupervisorJob() — isolates child failures.
+supervisorScope() — isolates direct child failures in a structured scope.
+Dispatchers.Default — CPU-oriented dispatcher.
+Dispatchers.IO — blocking-I/O oriented dispatcher.
+Dispatchers.Main — Android/UI main dispatcher.
+Dispatchers.Main.immediate — optimized main dispatcher that can avoid unnecessary redispatching.
+Dispatchers.Unconfined — starts without enforcing a specific thread; discussed as a special-purpose dispatcher.
+limitedParallelism() — creates a view with limited parallelism.
+newSingleThreadContext() — creates a dedicated single-thread dispatcher; discussed as an older/manual approach.
+asCoroutineDispatcher() — converts an executor to a coroutine dispatcher.
+Dispatchers.setMain() — installs a main dispatcher for tests.
+Dispatchers.resetMain() — restores the main dispatcher after tests.
+synchronized() — mutual exclusion for blocking/shared-state protection.
+AtomicInteger.incrementAndGet() — atomic increment-and-read.
+AtomicReference.get() — atomically reads a reference.
+AtomicReference.set() — atomically sets a reference.
+AtomicReference.compareAndSet() — atomically updates if the expected value matches.
+Mutex() — coroutine-friendly mutual exclusion primitive.
+lock() — acquires a mutex.
+unlock() — releases a mutex.
+withLock() — runs a block while holding the mutex.
+Semaphore() — limits concurrent access to a resource.
+withPermit() — runs a block while holding a semaphore permit.
+runTest() — main coroutine-test entry point.
+runBlockingTest() — older testing API discussed in the book's testing material.
+TestScope() — test coroutine scope.
+StandardTestDispatcher() — deterministic test dispatcher using virtual time.
+UnconfinedTestDispatcher() — unconfined-style test dispatcher.
+TestCoroutineScheduler() — virtual-time scheduler.
+advanceTimeBy() — advances virtual time by a given duration.
+advanceUntilIdle() — runs scheduled work until no tasks remain.
+runCurrent() — runs tasks scheduled for the current virtual time.
+currentCoroutineContext() — inspects context in a test.
+setMain() — set test main dispatcher.
+resetMain() — reset test main dispatcher.
+assertEquals() — compare expected and actual values.
+assertTrue() — assert a condition is true.
+assertNotNull() — assert a value is not null.
+setUp() — test setup hook used in examples.
+tearDown() — test cleanup hook used in examples.
+Channel() — creates a channel.
+produce() — creates a coroutine that sends to a channel.
+send() — suspending send.
+trySend() — non-suspending send attempt.
+trySendBlocking() — blocking send helper for callback/thread integration.
+receive() — suspending receive.
+receiveCatching() — receives while representing closed-channel state safely.
+close() — closes a channel/resource.
+cancel() — cancels a channel/coroutine where applicable.
+consumeEach() — consumes every channel element.
+iterator() — iterates through channel values.
+select() — waits for the first selected clause to become available.
+onReceive() — select clause for receiving.
+onReceiveCatching() — select clause for safe receive/closed state.
+onSend() — select clause for sending.
+onAwait() — select clause for awaiting a Deferred.
+awaitClose() — suspends until the channel is closed; especially important in callbackFlow.
+Channel.RENDEZVOUS
+Channel.BUFFERED
+Channel.CONFLATED
+Channel.UNLIMITED
+select() — choose the first ready operation.
+onAwait() — select on Deferred completion.
+onReceive() — select on channel receive.
+onReceiveCatching() — select on safe channel receive.
+onSend() — select on channel send.
+cancelChildren() — cancel competing child operations after a winner is chosen.
+flow {} — creates a cold Flow.
+flowOf() — creates a finite Flow from given values.
+emptyFlow() — creates an empty Flow.
+channelFlow {} — creates a Flow backed by a channel and allows child coroutines.
+callbackFlow {} — creates a Flow for wrapping callbacks/events.
+emit() — emits one Flow value.
+emitAll() — emits all values from another source.
+send() — sends from channelFlow/callbackFlow producer scope.
+trySend() — non-suspending send from producer scope.
+trySendBlocking() — blocking send helper from producer/callback integration.
+awaitClose() — keeps callbackFlow active until closed.
+asFlow() — converts supported sources to Flow; also used with channels/collections and other adapters in the book.
+collect() — terminal operation that consumes all emitted values.
+launchIn() — collects a Flow in a provided scope and returns a Job.
+first() — gets the first value.
+firstOrNull() — gets first value or null.
+last() — gets last value after collection completes.
+single() — expects exactly one value.
+count() — counts emitted values.
+toList() — collects emitted values into a List.
+toSet() — collects emitted values into a Set.
+fold() — combines all values from an initial accumulator.
+reduce() — combines values using the first value as the initial accumulator.
+flatMapConcat() — processes inner Flows sequentially.
+flatMapMerge() — processes inner Flows concurrently; supports concurrency.
+flatMapLatest() — switches to the newest inner Flow and stops processing the previous one.
+transform() — arbitrary value transformation/emission.
+combine() — combines latest values from multiple Flows.
+distinctUntilChanged() — removes consecutive duplicates.
+distinctUntilChangedBy() — removes consecutive duplicates based on a selected key.
+onEmpty() — handles an empty Flow.
+onStart() — action before upstream starts emitting.
+onCompletion() — action when Flow collection completes/cancels/errors.
+catch() — catches upstream Flow exceptions.
+retry() — retries after exceptions based on a predicate/attempt count.
+retryWhen() — custom retry control based on exception and attempt.
+flowOn() — changes context for upstream Flow operations.
+buffer() — buffers upstream emissions so producer and consumer can proceed more independently.
+conflate() — keeps the latest value when the consumer is slower than the producer.
+MutableSharedFlow() — mutable hot shared stream.
+SharedFlow — read-only shared hot stream.
+emit() — suspending emission to SharedFlow.
+tryEmit() — non-suspending emission attempt.
+subscriptionCount — observes the number of active subscribers.
+resetReplayCache() — clears replayed values in supported SharedFlow usage.
+shareIn() — converts a cold Flow into a shared hot Flow.
+SharingStarted.Eagerly
+SharingStarted.Lazily
+SharingStarted.WhileSubscribed()
+stopTimeoutMillis
+replayExpirationMillis
+MutableStateFlow() — mutable state holder.
+StateFlow — read-only state stream.
+stateIn() — converts a Flow into a StateFlow inside a scope.
+compareAndSet() — atomically updates a MutableStateFlow when the expected value matches.
+value — current StateFlow/MutableStateFlow value.
+21. Testing Flow
+runTest()
+backgroundScope — scope intended for long-lived/infinite test flows.
+flowOf()
+flow {}
+take() — limits how many values are collected.
+toList()
+onEach()
+launchIn()
+delay()
+testIn() — Turbine helper used in the book.
+awaitItem() — Turbine helper for waiting for the next item.
+expectNoEvents() — Turbine helper for verifying that no item/event arrived.
+toListDuring() — custom helper implemented in the book to collect for a fixed duration.
+shareIn()
+getOrPut() — used in the book's ConnectionPool cache.
+synchronized() — protects the connection map.
+getConnection() — custom ConnectionPool method from the recipe.
+mapAsync() — custom extension for concurrent list mapping.
+suspendLazy() — custom lazy initializer supporting suspension.
+raceOf() — custom first-result-wins coroutine race.
+retry() — custom retry helper for suspending operations.
+retryWhen() — custom retry helper with predicate and retry count.
+retryBackoff() — custom/external recipe used for exponential-backoff retry.
+toListDuring() — custom Flow testing helper.
+viewModelScope — lifecycle-aware ViewModel scope.
+lifecycleScope — lifecycle-aware Android scope.
+onCleared() — ViewModel lifecycle callback used for cleanup.
+onDestroy() — lifecycle callback appearing in scope examples.
+25. Interop / Reactive Streams conversion used in the book
+asFlow() — adapt a source to Kotlin Flow.
+asFlux() — adapt to Reactor Flux.
+asFlowable() — adapt to RxJava Flowable.
+asObservable() — adapt to RxJava Observable.
+subscribeOn() — RxJava scheduler selection shown in comparison material.
+observeOn() — RxJava observation scheduler selection shown in comparison material.
+subscribe() — RxJava subscription.
+zip() — RxJava example.
+flatMap() — RxJava/collection examples.
+sequence {} — sequence builder.
+yield() — yields a sequence element.
+yieldAll() — yields all elements from another iterable/sequence.
+sequenceOf() — creates a finite Sequence.
+iterator() — creates/gets an iterator.
+next() — gets the next iterator value.
+take() — limits a sequence.
+toList() — collects sequence values.
+distinct() — removes duplicate sequence values.
+repeat()
+System.currentTimeMillis()
+Executors.newSingleThreadExecutor()
+Executors.newSingleThreadScheduledExecutor()
+Executors.newVirtualThreadPerTaskExecutor()
+Thread.startVirtualThread()
+ScheduledExecutorService.schedule()
+Random.nextInt()
+Random.nextLong()
+UUID.randomUUID()
+ExecutorService.asCoroutineDispatcher()
+coroutineContext
+coroutineContext.job
+Job.children
+Job.isActive
+Job.isCompleted
+Job.isCancelled
+Deferred<T>.await()
+MutableStateFlow.value
+StateFlow.value
+MutableSharedFlow.subscriptionCount
+StandardTestDispatcher.scheduler
+TestCoroutineScheduler.currentTime
