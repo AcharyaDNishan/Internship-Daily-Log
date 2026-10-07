@@ -1,4 +1,4 @@
-produce() — starts a coroutine that produces values to a ReceiveChannel.
+produce() — starts a coroutine that produces values to a ReceiveChannel. import kotlinx.coroutines.channels.* has to be used.
 coroutineScope() — creates a structured child scope and waits for its children.
 supervisorScope() — creates a scope where sibling failures are isolated.
 currentCoroutineContext() — gets the current coroutine context from a suspending function.
