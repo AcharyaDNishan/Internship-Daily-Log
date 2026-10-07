@@ -1,0 +1,7 @@
+Stack of activity created when movinng from one activity to another so we can return back to the activity is known as Backstacks. 
+Tasks is the collection of mmultiole screen that belong together along with thhe stack. 
+Android will remmember all these tasks.
+Standard Launch Mode(Default): Always creates a new instannces of the activity on top of the current stack.
+Single Top: If ann instance of the activity, it reuses theh instances instead of creating a new one.
+Single Task: Launches the activity in a new, separate task, whhich is useful for maintaining a clean navigation flow whhen jumping between apps.
+Single Instance: Similar to single task, but the activity is completely isolated, meaning no other activities can be opened withinn the same task. This is typically reserved for speciallized use cases like payment processing.
