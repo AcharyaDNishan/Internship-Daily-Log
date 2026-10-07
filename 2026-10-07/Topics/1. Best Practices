@@ -1,0 +1,16 @@
+1>Don’t use async with an immediate await.
+2>Use coroutineScope instead of withContext(EmptyCoroutineContext).
+3>Use awaitAll
+4>Suspending functions should be safe to call from any thread.
+5>Use Dispatchers.Main.immediate instead of Dispatchers.Main.
+6>Remember to use yield in heavy functions.
+7>Understand that suspending functions await completion of their children.
+8>Understand that Job is not inherited: it is used as a parent.
+9>Don’t break structured concurrency.
+10>Use SupervisorJob when creating CoroutineScope.
+11>Consider cancelling scope children.
+12>Before using a scope, consider under which conditions it is cancelled.
+13>Don’t use GlobalScope.
+14>Avoid using Job builder, except for constructing a scope.
+15>Functions that return Flow should not be suspending.
+16>Prefer a suspending function instead of Flow when.
