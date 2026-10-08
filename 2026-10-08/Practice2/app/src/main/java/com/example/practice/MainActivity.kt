@@ -21,26 +21,18 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             PracticeTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Button(onClick = { vm.bchange()}) {Text(text = "Click Me ")}
+                Scaffold(
+                    modifier = Modifier.fillMaxSize(),
+                    containerColor = vm.backgroundColor
+                ) { innerPadding ->
+                    Button(
+                        onClick = { vm.bchange() },
+                        modifier = Modifier.padding(innerPadding)
+                    ) {
+                        Text(text = "Click Me ")
+                    }
                 }
             }
         }
-    }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    PracticeTheme {
-        Greeting("Android")
     }
 }
