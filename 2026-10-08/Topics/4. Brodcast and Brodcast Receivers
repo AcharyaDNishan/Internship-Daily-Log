@@ -1,1 +1,3 @@
 Brodcast are system wide events that our app can consume and receive. This can be sent by the system or our apps itself. 
+Dynamically declared receiver are known as Dynamic Broadcast Reciever. This only works when the app is active.
+Static Receiver are used for Receiving when the App is not active like whenn the phone is booted up. But there are a lot of restrictions to it because it incresese Battery Usage.
