@@ -1,6 +1,8 @@
 package com.example.practice
 
+import android.R.attr.type
 import android.content.Intent
+import android.content.IntentFilter
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -21,8 +23,13 @@ import com.example.practice.ui.theme.PracticeTheme
 
 class MainActivity : ComponentActivity() {
     private val vm by viewModels<ViewMM>()
+    private val ap = AirplaneMode()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        registerReceiver(
+            ap,
+            IntentFilter(Intent.ACTION_AIRPLANE_MODE_CHANGED)
+        )
         enableEdgeToEdge()
         setContent {
             val context = LocalContext.current
@@ -58,6 +65,23 @@ class MainActivity : ComponentActivity() {
                             }
                         ) {
                             Text(text = "YouTube")
+                        }
+                        Button(
+                            onClick = {
+                                val intent = Intent(Intent.ACTION_SEND).apply {
+                                    type = "text/plain"
+                                    putExtra(Intent.EXTRA_EMAIL, arrayOf("nishan@gmail.com"))
+                                    putExtra(Intent.EXTRA_SUBJECT, "Hello")
+                                    putExtra(Intent.EXTRA_TEXT, "I am coming back.")
+                                }
+                                if (intent.resolveActivity(packageManager) != null) {
+                                    context.startActivity(intent)
+                                } else {
+                                    context.startActivity(Intent.createChooser(intent, "Send Email"))
+                                }
+                            }
+                        ) {
+                            Text(text = "Send Mail")
                         }
                     }
                 }
