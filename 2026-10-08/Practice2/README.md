@@ -7,3 +7,4 @@
 7. Resources
 8. Intent
 9. Intent to launch Youtube
+10. Implicit Intent and Queries

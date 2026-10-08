@@ -1,5 +1,6 @@
 package com.example.practice
 
+import android.R.attr.type
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -58,6 +59,23 @@ class MainActivity : ComponentActivity() {
                             }
                         ) {
                             Text(text = "YouTube")
+                        }
+                        Button(
+                            onClick = {
+                                val intent = Intent(Intent.ACTION_SEND).apply {
+                                    type = "text/plain"
+                                    putExtra(Intent.EXTRA_EMAIL, arrayOf("nishan@gmail.com"))
+                                    putExtra(Intent.EXTRA_SUBJECT, "Hello")
+                                    putExtra(Intent.EXTRA_TEXT, "I am coming back.")
+                                }
+                                if (intent.resolveActivity(packageManager) != null) {
+                                    context.startActivity(intent)
+                                } else {
+                                    context.startActivity(Intent.createChooser(intent, "Send Email"))
+                                }
+                            }
+                        ) {
+                            Text(text = "Send Mail")
                         }
                     }
                 }
