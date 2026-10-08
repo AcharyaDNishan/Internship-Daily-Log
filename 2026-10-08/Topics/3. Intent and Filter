@@ -1,0 +1,4 @@
+Intent is used transfer the intention of one component to another, mostly activity. We can differentiate Intents into Explicit Intents and Implicit Intents.
+Explicit intent is targeted to one specific app that has to be specified. That could be used to launch an activity in own app or another app. 
+Implicit Intent just specify an action that can be performed from another app without specifying which app.     
+Intent Filter is the method to make it so that our application pops up when Implicit Intent is used and when we want to enable anything to be opened in out application.  
