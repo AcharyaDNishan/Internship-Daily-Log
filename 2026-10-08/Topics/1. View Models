@@ -1,0 +1,7 @@
+Model View VM is the view model used in android.
+------ UI Action    ----------------   Updates Model    -------
+|    |------------->|              |------------------->|     |
+|View|              |  View Model  |                    |Model|
+|    |<-------------|              |<-------------------|     |
+------ Notifies UI  ---------------- Notifies View Model-------
+VMM acts as a bridgge between View(UI) and Model(Data Source). It's primary job os to hold and prepare data for the ui annd handle user actions. VM is essential in Android because activities are destroyed and recreated during configguration change and VM Classes survive these Lifecycle Event.
