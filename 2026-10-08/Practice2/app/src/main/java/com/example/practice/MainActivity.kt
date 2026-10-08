@@ -6,19 +6,16 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
-import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.practice.ui.theme.PracticeTheme
 
@@ -31,40 +28,40 @@ class MainActivity : ComponentActivity() {
             val context = LocalContext.current
             PracticeTheme {
                 Scaffold(
+                    modifier = Modifier.fillMaxSize(),
                     containerColor = vm.backgroundColor
                 ) { innerPadding ->
-                    Button(
-                        onClick = {
-                            vm.bchange()
-                            val intent = Intent(context, SecondActivity::class.java)
-                            context.startActivity(intent)
-                        },
+                    Column(
                         modifier = Modifier
+                            .fillMaxSize()
                             .padding(innerPadding)
-                            .padding(16.dp)
+                            .padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Text(text = "Click Me")
-                    }
-            }
-                Scaffold(
-                    containerColor = vm.backgroundColor
-                ) {innerPadding ->
-                    Button(
-                        onClick = {
-                            Intent(Intent.ACTION_MAIN).also{
-                                it.`package`="com.google.android.youtube"
-                                context.startActivity(it)
+                        Button(
+                            onClick = {
+                                vm.bchange()
+                                val intent = Intent(context, SecondActivity::class.java)
+                                context.startActivity(intent)
                             }
-                        },
-                        modifier = Modifier
-                            .padding(innerPadding)
-                            .padding(16.dp)
-                    ) {
-                        Text(text = "Youtube")
+                        ) {
+                            Text(text = "Second Activity")
+                        }
+
+                        Button(
+                            onClick = {
+                                Intent(Intent.ACTION_MAIN).also {
+                                    it.`package` = "com.google.android.youtube"
+                                    context.startActivity(it)
+                                }
+                            }
+                        ) {
+                            Text(text = "YouTube")
+                        }
                     }
                 }
+            }
         }
     }
 }
-    }
-
