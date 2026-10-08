@@ -3,4 +3,5 @@
 3. Background Color Change
 4. Mutable State of
 5. Configuration Change Issue Solution using ViewModel() from Androidx.lifecycle
-6. 
+6. Context
+7. Resources
