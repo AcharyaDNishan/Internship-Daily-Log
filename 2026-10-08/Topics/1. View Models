@@ -4,4 +4,5 @@ Model View VM is the view model used in android.
 |View|              |  View Model  |                    |Model|
 |    |<-------------|              |<-------------------|     |
 ------ Notifies UI  ---------------- Notifies View Model-------
-VMM acts as a bridgge between View(UI) and Model(Data Source). It's primary job os to hold and prepare data for the ui annd handle user actions. VM is essential in Android because activities are destroyed and recreated during configguration change and VM Classes survive these Lifecycle Event.
+MVMM acts as a bridgge between View(UI) and Model(Data Source). It's primary job os to hold and prepare data for the ui annd handle user actions. VM is essential in Android because activities are destroyed and recreated during configguration change and VM Classes survive these Lifecycle Event.
+When configuration change happens, android completely recreates the activity by destroying the old activity and the viewmodel will be recreated and the value will be set to default. This is not something we would want. The configurationn channge problem is just an Android thing and IOS doesn't have it. To solve this problem, Android introduced their own version of a Viewmodel which still has responnsibility of a normal Viewmodel. What it does is create a Viewmodel that will outlive the lifecycle of its screen.
