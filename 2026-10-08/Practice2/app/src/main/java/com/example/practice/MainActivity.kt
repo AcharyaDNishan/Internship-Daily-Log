@@ -2,6 +2,7 @@ package com.example.practice
 
 import android.R.attr.type
 import android.content.Intent
+import android.content.IntentFilter
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -22,8 +23,13 @@ import com.example.practice.ui.theme.PracticeTheme
 
 class MainActivity : ComponentActivity() {
     private val vm by viewModels<ViewMM>()
+    private val ap = AirplaneMode()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        registerReceiver(
+            ap,
+            IntentFilter(Intent.ACTION_AIRPLANE_MODE_CHANGED)
+        )
         enableEdgeToEdge()
         setContent {
             val context = LocalContext.current
