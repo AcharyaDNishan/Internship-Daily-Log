@@ -1,16 +1,21 @@
 package com.example.practice
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.example.practice.ui.theme.PracticeTheme
 
@@ -20,24 +25,43 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
+            val context = LocalContext.current
             PracticeTheme {
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
                     containerColor = vm.backgroundColor
                 ) { innerPadding ->
-                    Button(
-                        onClick = {
-                            vm.bchange()
-                        },
+                    Column(
                         modifier = Modifier
+                            .fillMaxSize()
                             .padding(innerPadding)
-                            .padding(16.dp)
+                            .padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Text(text = "Click Me")
+                        Button(
+                            onClick = {
+                                vm.bchange()
+                                val intent = Intent(context, SecondActivity::class.java)
+                                context.startActivity(intent)
+                            }
+                        ) {
+                            Text(text = "Second Activity")
+                        }
+
+                        Button(
+                            onClick = {
+                                Intent(Intent.ACTION_MAIN).also {
+                                    it.`package` = "com.google.android.youtube"
+                                    context.startActivity(it)
+                                }
+                            }
+                        ) {
+                            Text(text = "YouTube")
+                        }
                     }
                 }
             }
         }
     }
 }
-
