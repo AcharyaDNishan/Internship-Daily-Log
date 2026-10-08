@@ -1,0 +1,2 @@
+ Resources refer to the non code things that our apps need.
+ In android studio, we can finnd it under the res folder. The res folder has drawable, mipmap, values and xml folders inside it. drawable relates to everything visual. We can put in real picture and vectographic.
