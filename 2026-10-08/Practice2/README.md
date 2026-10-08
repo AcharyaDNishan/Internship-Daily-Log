@@ -5,3 +5,4 @@
 5. Configuration Change Issue Solution using ViewModel() from Androidx.lifecycle
 6. Context
 7. Resources
+8. Intent
