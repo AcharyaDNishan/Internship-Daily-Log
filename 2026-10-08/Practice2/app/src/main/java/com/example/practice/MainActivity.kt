@@ -19,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.core.app.ActivityCompat
 import com.example.practice.ui.theme.PracticeTheme
 
 class MainActivity : ComponentActivity() {
@@ -26,6 +27,13 @@ class MainActivity : ComponentActivity() {
     private val ap = AirplaneMode()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if(android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(android.Manifest.permission.POST_NOTIFICATIONS),
+                0
+            )
+        }
         registerReceiver(
             ap,
             IntentFilter(Intent.ACTION_AIRPLANE_MODE_CHANGED)
@@ -46,6 +54,24 @@ class MainActivity : ComponentActivity() {
                         verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
+                        Button(
+                            onClick = {
+                                Intent(RunningSer.Actions.START.toString()).also{
+                                    startService(it)
+                                }
+                                 }
+                        ) {
+                            Text(text = "Start Activity")
+                        }
+                        Button(
+                            onClick = {
+                                Intent(RunningSer.Actions.STOP .toString()).also{
+                                    startService(it)
+                                }
+                            }
+                        ) {
+                            Text(text = "Stop Activity")
+                        }
                         Button(
                             onClick = {
                                 vm.bchange()
