@@ -24,5 +24,4 @@ class PhotoVM: ViewModel() {
     fun updateWorkId(id: UUID?) {
         workId = id
     }
-    }
 }
