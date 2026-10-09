@@ -1,21 +1,27 @@
 package com.example.project
 
 import android.app.ComponentCaller
+import android.content.ContentUris
 import android.content.Intent
 import android.graphics.BitmapFactory
+import android.icu.util.Calendar
+import android.media.Image
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.provider.MediaStore
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -37,13 +43,48 @@ import kotlin.jvm.java
 
 class MainActivity : ComponentActivity() {
     private lateinit var workManager: WorkManager
+    private val mm by viewModels<ImageC>()
     private val ViewModel by viewModels<PhotoVM>()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val projection = arrayOf(
+            MediaStore.Images.Media._ID,
+            MediaStore.Images.Media.DISPLAY_NAME
+        )
+        val milisYesterday= Calendar.getInstance().apply {
+            add(Calendar.DAY_OF_YEAR,-1)
+        }
+        val selection = "${MediaStore.Images.Media.DATE_TAKEN}>=?e"
+        val selectionArgs= arrayOf(milisYesterday.toString())
+        contentResolver.query(
+            MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+            projection,
+            selection,
+            selectionArgs
+        )?.use{
+            cursor->
+            val idColumn=cursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID)
+            val nameColumn=cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DISPLAY_NAME)
+            val image=mutableListOf<Image>()
+            while(cursor.moveToNext()){
+                val id=cursor.getLong(idColumn)
+                val name=cursor.getString(nameColumn)
+                val uri= ContentUris.withAppendedId(
+                    MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                            id
+                )
+                image.add(Image(id,name,uri))
+                mm.updateImages(image)
+        }
         workManager = WorkManager.getInstance(applicationContext)
         enableEdgeToEdge()
         setContent {
             ProjectTheme {
+                LazyColumn(modifier = Modifier.fillMaxSize()) {
+                    items
+                }
+
+
                 val workerResult=ViewModel.workId?.let{id->
                     workManager.getWorkInfoByIdLiveData(id)
                         .observeAsState()
@@ -83,8 +124,8 @@ class MainActivity : ComponentActivity() {
                         Text("Compressed Photo")
                     }
                 }
-            }
-        }
+            }}
+
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -112,18 +153,8 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
+data class Image(
+    val id: Long,
+    val name: String,
+    val uri: Uri
     )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    ProjectTheme {
-        Greeting("Android")
-    }
-}

@@ -9,6 +9,7 @@ import androidx.lifecycle.ViewModel
 import java.util.UUID
 
 class PhotoVM: ViewModel() {
+
     var uncompressedUri: Uri? by mutableStateOf(null)
         private set
     var compressedBitmap: Bitmap? by mutableStateOf(null)
