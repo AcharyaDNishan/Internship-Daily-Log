@@ -1,0 +1,6 @@
+URIs stands for Unique Resource Identifier. We use Uri functionn when using URI.
+There are four types.
+1>Resource URI: the resources in the package
+2>File URI: External Resources can be used
+3> Content URI
+4> Data URI
