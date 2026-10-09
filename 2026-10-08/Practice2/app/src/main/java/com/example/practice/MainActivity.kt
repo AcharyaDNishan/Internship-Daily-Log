@@ -3,6 +3,7 @@ package com.example.practice
 import android.R.attr.type
 import android.content.Intent
 import android.content.IntentFilter
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -56,8 +57,13 @@ class MainActivity : ComponentActivity() {
                     ) {
                         Button(
                             onClick = {
-                                Intent(RunningSer.Actions.START.toString()).also{
-                                    startService(it)
+                                Intent(applicationContext, RunningSer::class.java ).also{
+                                    it.action = RunningSer.Actions.START.toString()
+                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                        startForegroundService(it)
+                                    } else {
+                                        startService(it)
+                                    }
                                 }
                                  }
                         ) {
@@ -65,7 +71,8 @@ class MainActivity : ComponentActivity() {
                         }
                         Button(
                             onClick = {
-                                Intent(RunningSer.Actions.STOP .toString()).also{
+                                Intent(applicationContext, RunningSer::class.java ).also{
+                                    it.action = RunningSer.Actions.STOP.toString()
                                     startService(it)
                                 }
                             }
