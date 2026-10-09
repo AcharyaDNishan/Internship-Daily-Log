@@ -21,6 +21,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.tooling.preview.Preview
@@ -60,7 +61,7 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                 }
-                Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Top, horizontalAlignment = Arrangement.Center) {
+                Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Top, horizontalAlignment = Alignment.CenterHorizontally) {
                     ViewModel.uncompressedUri?.let {
                         Text("Uncompressed Photo")
                         AsyncImage(
@@ -93,7 +94,7 @@ class MainActivity : ComponentActivity() {
         } else {
             intent?.getParcelableExtra(Intent.EXTRA_STREAM)
         }?:return
-        viewModel.updateUncompressedUri(uri)
+        ViewModel.updateUncompressedUri(uri)
         val request= OneTimeWorkRequestBuilder<PhotoComp>()
             .setInputData(
                 workDataOf(
@@ -102,7 +103,7 @@ class MainActivity : ComponentActivity() {
                 )
             )
             .setConstraints(
-                Constraints(requiresSorageNotLow=true)
+                Constraints(requiresStorageNotLow=true)
             )
             .build()
         ViewModel.updateWorkId(request.id)
