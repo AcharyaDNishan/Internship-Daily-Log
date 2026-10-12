@@ -27,6 +27,10 @@
             android:name=".Login"
             android:exported="false"
             android:theme="@style/Theme.Practice" />
+        <activity
+            android:name=".loggedin"
+            android:exported="false"
+            android:theme="@style/Theme.Practice" />
     </application>
 
 </manifest>
