@@ -1,7 +1,9 @@
 package com.example.practice
 
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import com.google.android.material.textfield.TextInputEditText
@@ -14,18 +16,22 @@ class MainActivity : ComponentActivity() {
         val etLastName = findViewById<TextInputEditText>(R.id.etLastName)
         val etDob = findViewById<TextInputEditText>(R.id.etDob)
         val etCountry = findViewById<TextInputEditText>(R.id.etCountry)
+        val password=findViewById<TextInputEditText>(R.id.pw)
         val btnApply = findViewById<Button>(R.id.button)
-
-        // 2. Set click listener on the button to read the text into variables
+        val login = findViewById<TextView>(R.id.login)
         btnApply.setOnClickListener {
             val firstName = etFirstName.text.toString()
             val lastName = etLastName.text.toString()
             val dob = etDob.text.toString()
             val country = etCountry.text.toString()
-
-            // 3. Use the variables (e.g., show a Toast message)
             val message = "Name: $firstName $lastName, DOB: $dob, Country: $country"
             Toast.makeText(this, message, Toast.LENGTH_LONG).show()
         }
+        login.setOnClickListener {
+            val intent = Intent(this, Login::class.java)
+            startActivity(intent)
+        }
+        val data=joinToString(etFirstName,etLastName,etDob,etCountry,password)
+        openFileOutput("Data.txt", MODE_PRIVATE).bufferedWriter().use {  }
     }
 }
