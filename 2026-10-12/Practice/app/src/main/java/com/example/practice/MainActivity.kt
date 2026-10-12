@@ -22,18 +22,24 @@ class MainActivity : ComponentActivity() {
         val login = findViewById<TextView>(R.id.login)
 
         btnApply.setOnClickListener {
-            val firstName = etFirstName.text.toString()
-            val lastName = etLastName.text.toString()
-            val dob = etDob.text.toString()
-            val country = etCountry.text.toString()
-            val pw = password.text.toString()
+            val firstName = etFirstName.text.toString().trim()
+            val lastName = etLastName.text.toString().trim()
+            val dob = etDob.text.toString().trim()
+            val country = etCountry.text.toString().trim()
+            val pw = password.text.toString().trim()
+
+            if (firstName.isEmpty() || pw.isEmpty()) {
+                Toast.makeText(this, "Please fill in required fields", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
             val data = listOf(firstName, lastName, dob, country, pw).joinToString(",")
             try {
-                openFileOutput("Data.txt", MODE_PRIVATE).bufferedWriter().use { writer ->
+                openFileOutput("Data.txt", MODE_APPEND).bufferedWriter().use { writer ->
                     writer.write(data)
                     writer.newLine()
                 }
-                Toast.makeText(this, "Account created successfully!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Data saved successfully", Toast.LENGTH_SHORT).show()
             } catch (e: Exception) {
                 Toast.makeText(this, "Error saving data: ${e.message}", Toast.LENGTH_SHORT).show()
             }
