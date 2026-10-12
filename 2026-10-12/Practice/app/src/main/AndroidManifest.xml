@@ -31,6 +31,10 @@
             android:name=".LoggedInActivity"
             android:exported="false"
             android:theme="@style/Theme.Practice" />
+        <activity
+            android:name=".profile"
+            android:exported="false"
+            android:theme="@style/Theme.Practice" />
     </application>
 
 </manifest>

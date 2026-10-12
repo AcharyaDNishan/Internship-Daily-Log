@@ -1,6 +1,8 @@
 package com.example.practice
 
+import android.os.Bundle
 import android.widget.Button
+import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -8,13 +10,13 @@ import com.google.android.material.textfield.TextInputEditText
 import java.io.File
 
 class profile: ComponentActivity() {
-    fun onCreate(savedInstanceState) {
+    override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.profile)
-        val etFirstName = findViewById<TextInputEditText>(R.id.etFirstName)
-        val etLastName = findViewById<TextInputEditText>(R.id.etLastName)
-        val etDob = findViewById<TextInputEditText>(R.id.etDob)
-        val etCountry = findViewById<TextInputEditText>(R.id.etCountry)
+        val etFirstName = findViewById<EditText>(R.id.fn)
+        val etLastName = findViewById<EditText>(R.id.ln)
+        val etDob = findViewById<EditText>(R.id.dob)
+        val etCountry = findViewById<EditText>(R.id.con)
         val uid = intent.getStringExtra("uid")
         try {
             val f = File(filesDir, "Data.txt")
@@ -22,13 +24,17 @@ class profile: ComponentActivity() {
                 val lines = f.readLines()
                 lines.forEach { row ->
                     val columns = row.split(",")
-                    if (columns.size >= 5) {
+                    if (columns.size >= 6) {
                         val savedUID = columns[5].trim()
-                        if(uid==savedUID){
-                            etFirstName.text=columns[0]
-                            etLastName.text=columns[1]
-                            etDob.text=columns[2]
-                            etCountry.text=columns[3]
+                        if (uid == savedUID) {
+                            val fn:String = columns[0]
+                            val ln: String = columns[1]
+                            val db = columns[2]
+                            val cn = columns[3]
+                            etFirstName.setText(fn)
+                            etLastName.setText(ln)
+                            etDob.setText(db)
+                            etCountry.setText(cn)
                         }
                     }
                 }

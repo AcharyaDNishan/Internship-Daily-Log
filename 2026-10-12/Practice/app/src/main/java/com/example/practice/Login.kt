@@ -31,7 +31,7 @@ class Login : ComponentActivity() {
                     val lines = f.readLines()
                     lines.forEach { row ->
                         val columns = row.split(",")
-                        if (columns.size >= 5) {
+                        if (columns.size >= 6) {
                             val savedUser = columns[0].trim()
                             val savedPass = columns[4].trim()
                             val savedUID = columns[5].trim()
@@ -45,7 +45,6 @@ class Login : ComponentActivity() {
             } catch (e: Exception) {
                 Toast.makeText(this, "Error reading data: ${e.message}", Toast.LENGTH_SHORT).show()
             }
-
             if (loggedIn) {
                 Toast.makeText(this, "Login Successful!", Toast.LENGTH_SHORT).show()
                 val intent = Intent(this, profile::class.java)
