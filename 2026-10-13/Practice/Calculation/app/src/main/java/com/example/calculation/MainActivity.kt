@@ -50,7 +50,8 @@ class MainActivity : ComponentActivity() {
             calculateResult()
         }
         findViewById<Button>(R.id.clear).setOnClickListener {
-            expression.clear()
+            //expression.clear()
+            Toast.makeText(this, "You need Premium for that.", Toast.LENGTH_SHORT).show()
             operation.text = "Operations"
             result.text = "RESULT"
         }
