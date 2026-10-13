@@ -49,13 +49,26 @@ class MainActivity : ComponentActivity() {
         findViewById<Button>(R.id.equals).setOnClickListener {
             calculateResult()
         }
+        findViewById<Button>(R.id.clear).setOnClickListener {
+            expression.clear()
+            operation.text = "Operations"
+            result.text = "RESULT"
+        }
+        findViewById<Button>(R.id.backspace).setOnClickListener {
+            if (expression.isNotEmpty()) {
+                expression.removeAt(expression.size - 1)
+                operation.text = if (expression.isEmpty()) "Operations" else expression.joinToString("")
+            }
+        }
     }
+
     private fun calculateResult() {
         if (expression.isEmpty()) return
         try {
             val numbers = mutableListOf<Double>()
             val operators = mutableListOf<String>()
             var tempStr = ""
+
             for (item in expression) {
                 if (item == "+" || item == "-" || item == "*" || item == "/") {
                     if (tempStr.isNotEmpty()) {
@@ -70,7 +83,10 @@ class MainActivity : ComponentActivity() {
             if (tempStr.isNotEmpty()) {
                 numbers.add(tempStr.toDouble())
             }
+
             if (numbers.isEmpty()) return
+
+            // Step 1: Multiplication and Division (BODMAS / Precedence)
             var i = 0
             while (i < operators.size) {
                 if (operators[i] == "*" || operators[i] == "/") {
@@ -89,6 +105,8 @@ class MainActivity : ComponentActivity() {
                     i++
                 }
             }
+
+            // Step 2: Addition and Subtraction
             var resultVal = numbers[0]
             for (j in operators.indices) {
                 val n2 = numbers[j + 1]
@@ -98,6 +116,7 @@ class MainActivity : ComponentActivity() {
                     resultVal -= n2
                 }
             }
+
             result.text = if (resultVal == resultVal.toInt().toDouble()) {
                 resultVal.toInt().toString()
             } else {
