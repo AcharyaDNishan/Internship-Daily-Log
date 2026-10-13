@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#505267">
+
+    <View
+        android:id="@+id/view"
+        android:layout_width="375dp"
+        android:layout_height="741dp"
+        android:background="#CFCFD2"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
+        tools:layout_editor_absoluteX="16dp"
+        tools:layout_editor_absoluteY="-5dp" />
+
+    <View
+        android:id="@+id/view2"
+        android:layout_width="154dp"
+        android:layout_height="45dp"
+        tools:layout_editor_absoluteX="213dp"
+        tools:layout_editor_absoluteY="16dp"
+        android:background="#382532"/>
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="TextView"
+        tools:layout_editor_absoluteX="59dp"
+        tools:layout_editor_absoluteY="101dp"
+        android:background="#425C5E"
+        android:fontFamily="SansSerif"
+        android:textSize=""/>
+</androidx.constraintlayout.widget.ConstraintLayout>
