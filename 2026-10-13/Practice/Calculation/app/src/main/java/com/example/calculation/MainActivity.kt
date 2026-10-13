@@ -10,7 +10,6 @@ class MainActivity : ComponentActivity() {
     private lateinit var operation: TextView
     private lateinit var result: TextView
     private val expression = mutableListOf<String>()
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -54,30 +53,55 @@ class MainActivity : ComponentActivity() {
     private fun calculateResult() {
         if (expression.isEmpty()) return
         try {
-            val numbers = mutableListOf<Int>()
+            val numbers = mutableListOf<Double>()
             val operators = mutableListOf<String>()
-            var temp = 0
-            if("/" in operators){
-                
-            }
-            numbers.add(temp)
-            if (numbers.isNotEmpty()) {
-                var opResult = numbers[0]
-                for (i in operators.indices) {
-                    if (i + 1 < numbers.size) {
-                        when (operators[i]) {
-                            "+" -> opResult += numbers[i + 1]
-                            "-" -> opResult -= numbers[i + 1]
-                            "*" -> opResult *= numbers[i + 1]
-                            "/" -> {
-                                if (numbers[i + 1] != 0) {
-                                    opResult /= numbers[i + 1]
-                                }
-                            }
-                        }
+            var tempStr = ""
+            for (item in expression) {
+                if (item == "+" || item == "-" || item == "*" || item == "/") {
+                    if (tempStr.isNotEmpty()) {
+                        numbers.add(tempStr.toDouble())
+                        tempStr = ""
                     }
+                    operators.add(item)
+                } else {
+                    tempStr += item
                 }
-                result.text = opResult.toString()
+            }
+            if (tempStr.isNotEmpty()) {
+                numbers.add(tempStr.toDouble())
+            }
+            if (numbers.isEmpty()) return
+            var i = 0
+            while (i < operators.size) {
+                if (operators[i] == "*" || operators[i] == "/") {
+                    val n1 = numbers[i]
+                    val n2 = numbers[i + 1]
+                    val res = if (operators[i] == "*") {
+                        n1 * n2
+                    } else {
+                        if (n2 == 0.0) throw ArithmeticException("Division by zero")
+                        n1 / n2
+                    }
+                    numbers[i] = res
+                    numbers.removeAt(i + 1)
+                    operators.removeAt(i)
+                } else {
+                    i++
+                }
+            }
+            var resultVal = numbers[0]
+            for (j in operators.indices) {
+                val n2 = numbers[j + 1]
+                if (operators[j] == "+") {
+                    resultVal += n2
+                } else if (operators[j] == "-") {
+                    resultVal -= n2
+                }
+            }
+            result.text = if (resultVal == resultVal.toInt().toDouble()) {
+                resultVal.toInt().toString()
+            } else {
+                resultVal.toString()
             }
         } catch (e: Exception) {
             Toast.makeText(this, "Invalid Operation", Toast.LENGTH_SHORT).show()
