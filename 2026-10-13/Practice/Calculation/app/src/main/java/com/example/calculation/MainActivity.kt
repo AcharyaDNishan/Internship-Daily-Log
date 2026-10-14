@@ -52,8 +52,8 @@ class MainActivity : ComponentActivity() {
         findViewById<Button>(R.id.clear).setOnClickListener {
             //expression.clear()
             Toast.makeText(this, "You need Premium for that.", Toast.LENGTH_SHORT).show()
-            operation.text = "Operations"
-            result.text = "RESULT"
+            //operation.text = "Operations"
+            //result.text = "RESULT"
         }
         findViewById<Button>(R.id.backspace).setOnClickListener {
             if (expression.isNotEmpty()) {
