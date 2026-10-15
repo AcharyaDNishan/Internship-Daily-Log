@@ -9,7 +9,6 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
-import io.github.jan_tennert.supabase.postgrest.from
 import kotlinx.coroutines.launch
 
 class SignInActivity : ComponentActivity() {
@@ -30,33 +29,46 @@ class SignInActivity : ComponentActivity() {
         val tvAlreadyHaveAccount = findViewById<TextView>(R.id.tvAlreadyHaveAccount)
 
         btnSignIn?.setOnClickListener {
-            val firstName = etFirstName?.text?.toString()?.trim().orEmpty()
-            val lastName = etLastName?.text?.toString()?.trim().orEmpty()
-            val phone = etPhoneNumber?.text?.toString()?.trim().orEmpty()
-            val password = etPassword?.text?.toString()?.trim().orEmpty()
+            if (SecurityValidator.isRateLimited("signin")) {
+                Toast.makeText(this, "Too many sign-up attempts. Please wait 1 minute.", Toast.LENGTH_LONG).show()
+                return@setOnClickListener
+            }
+
+            val firstName = SecurityValidator.sanitizeText(etFirstName?.text?.toString().orEmpty())
+            val lastName = SecurityValidator.sanitizeText(etLastName?.text?.toString().orEmpty())
+            val phone = SecurityValidator.sanitizeText(etPhoneNumber?.text?.toString().orEmpty())
+            val password = etPassword?.text?.toString().orEmpty()
 
             tilFirstName?.error = null
             tilLastName?.error = null
             tilPhoneNumber?.error = null
             tilPassword?.error = null
 
-            when {
-                firstName.isEmpty() -> {
-                    tilFirstName?.error = "Please enter first name"
-                    return@setOnClickListener
-                }
-                lastName.isEmpty() -> {
-                    tilLastName?.error = "Please enter last name"
-                    return@setOnClickListener
-                }
-                phone.isEmpty() -> {
-                    tilPhoneNumber?.error = "Please enter phone number"
-                    return@setOnClickListener
-                }
-                password.isEmpty() -> {
-                    tilPassword?.error = "Please enter password"
-                    return@setOnClickListener
-                }
+            val fnErr = SecurityValidator.validateName(firstName, "First Name")
+            val lnErr = SecurityValidator.validateName(lastName, "Last Name")
+            val phoneErr = SecurityValidator.validatePhoneNumber(phone)
+            val passErr = SecurityValidator.validatePassword(password)
+
+            if (fnErr != null) {
+                tilFirstName?.error = fnErr
+                return@setOnClickListener
+            }
+            if (lnErr != null) {
+                tilLastName?.error = lnErr
+                return@setOnClickListener
+            }
+            if (phoneErr != null) {
+                tilPhoneNumber?.error = phoneErr
+                return@setOnClickListener
+            }
+            if (passErr != null) {
+                tilPassword?.error = passErr
+                return@setOnClickListener
+            }
+
+            if (SessionManager.usersList.any { it.phone == phone }) {
+                tilPhoneNumber?.error = "An account with this phone number already exists"
+                return@setOnClickListener
             }
 
             val newUid = SessionManager.generateUnique9DigitUid()
@@ -66,21 +78,15 @@ class SignInActivity : ComponentActivity() {
                 password = password,
                 firstName = firstName,
                 lastName = lastName,
-                creditBalance = 100.0 // Welcome bonus credit
+                creditBalance = 100.0 // Welcome bonus
             )
 
             lifecycleScope.launch {
-                try {
-                    SupabaseClient.client.from("users").insert(newUser)
-                } catch (e: Exception) {
-                    // Ignored if network/table error, local fallback handles it
-                }
-
                 SessionManager.usersList.add(newUser)
                 SessionManager.currentUser = newUser
                 SessionManager.isAdmin = false
 
-                Toast.makeText(this@SignInActivity, "Sign Up Successful! Welcome UID: $newUid", Toast.LENGTH_LONG).show()
+                Toast.makeText(this@SignInActivity, "Account Created! Your Unique UID: $newUid", Toast.LENGTH_LONG).show()
                 startActivity(Intent(this@SignInActivity, ProfileActivity::class.java))
                 finish()
             }

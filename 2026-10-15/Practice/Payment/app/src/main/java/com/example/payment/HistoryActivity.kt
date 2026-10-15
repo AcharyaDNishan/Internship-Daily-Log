@@ -2,18 +2,23 @@ package com.example.payment
 
 import android.content.Intent
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
-import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.activity.ComponentActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.android.material.textfield.TextInputEditText
 
 class HistoryActivity : ComponentActivity() {
+
+    private lateinit var adapter: TransactionAdapter
+    private val fullList = mutableListOf<TransactionItem>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -21,13 +26,34 @@ class HistoryActivity : ComponentActivity() {
 
         val currentUser = SessionManager.currentUser
         val rvTransactions = findViewById<RecyclerView>(R.id.rvTransactions)
+        val etSearch = findViewById<TextInputEditText>(R.id.etSearch)
 
         val userTransactions = SessionManager.transactionsList.filter {
             currentUser == null || it.senderUid == currentUser.uid || it.receiverUid == currentUser.uid || it.senderPhone == currentUser.phone || it.receiverPhone == currentUser.phone
         }
 
+        fullList.clear()
+        fullList.addAll(userTransactions)
+
+        adapter = TransactionAdapter(fullList)
         rvTransactions?.layoutManager = LinearLayoutManager(this)
-        rvTransactions?.adapter = TransactionAdapter(userTransactions)
+        rvTransactions?.adapter = adapter
+
+        etSearch?.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                val query = s?.toString()?.trim()?.lowercase().orEmpty()
+                val filtered = if (query.isEmpty()) {
+                    userTransactions
+                } else {
+                    userTransactions.filter {
+                        it.description.lowercase().contains(query) || it.receiverPhone.contains(query) || it.amount.toString().contains(query)
+                    }
+                }
+                adapter.updateList(filtered)
+            }
+            override fun afterTextChanged(s: Editable?) {}
+        })
 
         setupBottomNavigation(R.id.nav_history)
     }
@@ -64,8 +90,13 @@ class HistoryActivity : ComponentActivity() {
         }
     }
 
-    private class TransactionAdapter(private val list: List<TransactionItem>) :
+    private class TransactionAdapter(private var list: List<TransactionItem>) :
         RecyclerView.Adapter<TransactionAdapter.TxViewHolder>() {
+
+        fun updateList(newList: List<TransactionItem>) {
+            this.list = newList
+            notifyDataSetChanged()
+        }
 
         class TxViewHolder(view: View) : RecyclerView.ViewHolder(view) {
             val tvTitle: TextView = view.findViewById(R.id.tvTransactionTitle)
@@ -88,10 +119,10 @@ class HistoryActivity : ComponentActivity() {
             holder.tvStatus.text = "Completed"
 
             if (tx.type == "QR_REDEEM" || tx.type == "RECEIVED") {
-                holder.tvAmount.setTextColor(0xFF22C55E.toInt())
+                holder.tvAmount.setTextColor(0xFF16A34A.toInt())
                 holder.tvAmount.text = "+ ₹${tx.amount}"
             } else {
-                holder.tvAmount.setTextColor(0xFFEF4444.toInt())
+                holder.tvAmount.setTextColor(0xFFDC2626.toInt())
                 holder.tvAmount.text = "- ₹${tx.amount}"
             }
         }

@@ -8,7 +8,7 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
-import io.github.jan_tennert.supabase.postgrest.from
+import com.google.android.material.textfield.TextInputLayout
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -20,13 +20,21 @@ class SendActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.send)
 
+        val tilRecipient = findViewById<TextInputLayout>(R.id.tilRecipient)
         val etRecipient = findViewById<TextInputEditText>(R.id.etRecipient)
         val btnSend = findViewById<MaterialButton>(R.id.btnSend)
 
         btnSend?.setOnClickListener {
-            val input = etRecipient?.text?.toString()?.trim().orEmpty()
-            if (input.isEmpty()) {
-                Toast.makeText(this, "Please enter recipient phone number or UID", Toast.LENGTH_SHORT).show()
+            if (SecurityValidator.isRateLimited("send")) {
+                Toast.makeText(this, "Rate limit exceeded. Please wait a moment.", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            val recipientInput = SecurityValidator.sanitizeText(etRecipient?.text?.toString().orEmpty())
+            tilRecipient?.error = null
+
+            if (recipientInput.isEmpty()) {
+                tilRecipient?.error = "Please enter mobile number or UID"
                 return@setOnClickListener
             }
 
@@ -38,9 +46,9 @@ class SendActivity : ComponentActivity() {
                 return@setOnClickListener
             }
 
-            val amount = 100.0 // Default transaction amount
+            val amount = 100.0
             if (currentUser.creditBalance < amount) {
-                Toast.makeText(this, "Insufficient credit balance!", Toast.LENGTH_SHORT).show()
+                tilRecipient?.error = "Insufficient credit balance (₹${currentUser.creditBalance} available)"
                 return@setOnClickListener
             }
 
@@ -48,14 +56,12 @@ class SendActivity : ComponentActivity() {
                 val updatedSender = currentUser.copy(creditBalance = currentUser.creditBalance - amount)
                 SessionManager.currentUser = updatedSender
 
-                // Update local list user
-                val localUserIdx = SessionManager.usersList.indexOfFirst { it.uid == currentUser.uid }
-                if (localUserIdx != -1) {
-                    SessionManager.usersList[localUserIdx] = updatedSender
+                val senderIdx = SessionManager.usersList.indexOfFirst { it.uid == currentUser.uid }
+                if (senderIdx != -1) {
+                    SessionManager.usersList[senderIdx] = updatedSender
                 }
 
-                // Add to recipient if found
-                val recipientUser = SessionManager.usersList.find { it.phone == input || it.uid == input }
+                val recipientUser = SessionManager.usersList.find { it.phone == recipientInput || it.uid == recipientInput }
                 if (recipientUser != null) {
                     val recipientIdx = SessionManager.usersList.indexOf(recipientUser)
                     SessionManager.usersList[recipientIdx] = recipientUser.copy(creditBalance = recipientUser.creditBalance + amount)
@@ -64,24 +70,17 @@ class SendActivity : ComponentActivity() {
                 val now = SimpleDateFormat("dd MMM, hh:mm a", Locale.getDefault()).format(Date())
                 val newTx = TransactionItem(
                     senderUid = currentUser.uid,
-                    receiverUid = input,
+                    receiverUid = recipientInput,
                     senderPhone = currentUser.phone,
-                    receiverPhone = input,
+                    receiverPhone = recipientInput,
                     amount = amount,
                     type = "SENT",
-                    description = "Payment to $input",
+                    description = "Sent ₹$amount to $recipientInput",
                     createdAt = now
                 )
 
                 SessionManager.transactionsList.add(0, newTx)
-
-                try {
-                    SupabaseClient.client.from("transactions").insert(newTx)
-                } catch (e: Exception) {
-                    // Ignored if network/table error
-                }
-
-                Toast.makeText(this@SendActivity, "₹$amount Sent Successfully to $input!", Toast.LENGTH_LONG).show()
+                Toast.makeText(this@SendActivity, "₹$amount Sent Successfully to $recipientInput!", Toast.LENGTH_LONG).show()
                 etRecipient?.text?.clear()
             }
         }

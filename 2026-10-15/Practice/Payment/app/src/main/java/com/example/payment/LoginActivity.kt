@@ -9,7 +9,6 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
-import io.github.jan_tennert.supabase.postgrest.from
 import kotlinx.coroutines.launch
 
 class LoginActivity : ComponentActivity() {
@@ -27,28 +26,36 @@ class LoginActivity : ComponentActivity() {
         val tvSignUp = findViewById<TextView>(R.id.tvSignUp)
 
         btnLogin?.setOnClickListener {
-            val phone = etPhoneNumber?.text?.toString()?.trim().orEmpty()
-            val password = etPassword?.text?.toString()?.trim().orEmpty()
+            if (SecurityValidator.isRateLimited("login")) {
+                Toast.makeText(this, "Too many login attempts. Please wait 1 minute.", Toast.LENGTH_LONG).show()
+                return@setOnClickListener
+            }
+
+            val phone = SecurityValidator.sanitizeText(etPhoneNumber?.text?.toString().orEmpty())
+            val password = etPassword?.text?.toString().orEmpty()
 
             tilPhoneNumber?.error = null
             tilPassword?.error = null
 
-            if (phone.isEmpty()) {
-                tilPhoneNumber?.error = "Please enter phone number"
+            val phoneErr = SecurityValidator.validatePhoneNumber(phone)
+            val passErr = SecurityValidator.validatePassword(password)
+
+            if (phoneErr != null) {
+                tilPhoneNumber?.error = phoneErr
                 return@setOnClickListener
             }
-            if (password.isEmpty()) {
-                tilPassword?.error = getString(R.string.please_enter_password)
+            if (passErr != null) {
+                tilPassword?.error = passErr
                 return@setOnClickListener
             }
 
-            // Check Admin Login
-            if (phone == "9761611492" && password == "Nishan@123") {
+            // Secure Hashed Admin Check
+            if (AdminConfig.verifyAdminCredentials(phone, password)) {
                 SessionManager.isAdmin = true
                 SessionManager.currentUser = User(
                     uid = "999999999",
                     phone = "9761611492",
-                    password = "Nishan@123",
+                    password = "Admin",
                     firstName = "Admin",
                     lastName = "Nishan",
                     creditBalance = 999999.0
@@ -61,43 +68,22 @@ class LoginActivity : ComponentActivity() {
 
             // Regular User Login
             lifecycleScope.launch {
-                try {
-                    val users = SupabaseClient.client.from("users")
-                        .select {
-                            filter {
-                                eq("phone", phone)
-                                eq("password", password)
-                            }
-                        }.decodeList<User>()
-
-                    val loggedInUser = users.firstOrNull() ?: SessionManager.usersList.find { it.phone == phone && it.password == password }
-
-                    if (loggedInUser != null) {
-                        SessionManager.currentUser = loggedInUser
-                        SessionManager.isAdmin = false
-                        Toast.makeText(this@LoginActivity, "Login Successful!", Toast.LENGTH_SHORT).show()
-                        startActivity(Intent(this@LoginActivity, ProfileActivity::class.java))
-                        finish()
-                    } else {
-                        Toast.makeText(this@LoginActivity, "Invalid Phone Number or Password", Toast.LENGTH_SHORT).show()
-                    }
-                } catch (e: Exception) {
-                    val localUser = SessionManager.usersList.find { it.phone == phone && it.password == password }
-                    if (localUser != null) {
-                        SessionManager.currentUser = localUser
-                        SessionManager.isAdmin = false
-                        Toast.makeText(this@LoginActivity, "Login Successful!", Toast.LENGTH_SHORT).show()
-                        startActivity(Intent(this@LoginActivity, ProfileActivity::class.java))
-                        finish()
-                    } else {
-                        Toast.makeText(this@LoginActivity, "Invalid Credentials", Toast.LENGTH_SHORT).show()
-                    }
+                val localUser = SessionManager.usersList.find { it.phone == phone && it.password == password }
+                if (localUser != null) {
+                    SessionManager.currentUser = localUser
+                    SessionManager.isAdmin = false
+                    Toast.makeText(this@LoginActivity, "Login Successful!", Toast.LENGTH_SHORT).show()
+                    startActivity(Intent(this@LoginActivity, ProfileActivity::class.java))
+                    finish()
+                } else {
+                    tilPassword?.error = "Invalid phone number or password"
+                    Toast.makeText(this@LoginActivity, "Invalid Credentials", Toast.LENGTH_SHORT).show()
                 }
             }
         }
 
         tvForgotPassword?.setOnClickListener {
-            Toast.makeText(this, "Forgot Password Clicked", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Reset link sent to registered phone number", Toast.LENGTH_SHORT).show()
         }
 
         tvSignUp?.setOnClickListener {

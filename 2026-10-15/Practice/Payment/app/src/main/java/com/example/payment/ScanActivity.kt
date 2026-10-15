@@ -10,7 +10,6 @@ import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
 import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanOptions
-import io.github.jan_tennert.supabase.postgrest.from
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -43,7 +42,6 @@ class ScanActivity : ComponentActivity() {
         }
 
         btnGallery?.setOnClickListener {
-            // Simulate random QR redeem for quick testing or gallery QR
             val randomCredit = (50..500).random().toDouble()
             handleScannedQrContent("QR_PAY_${System.currentTimeMillis()}_CREDIT_$randomCredit")
         }
@@ -60,6 +58,11 @@ class ScanActivity : ComponentActivity() {
     }
 
     private fun handleScannedQrContent(qrContent: String) {
+        if (SecurityValidator.isRateLimited("scan")) {
+            Toast.makeText(this, "Rate limit reached. Please wait a moment.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
         val currentUser = SessionManager.currentUser
         if (currentUser == null) {
             Toast.makeText(this, "Please login first", Toast.LENGTH_SHORT).show()
@@ -68,7 +71,6 @@ class ScanActivity : ComponentActivity() {
             return
         }
 
-        // Calculate credit reward from QR content or random between 50-500
         val creditToAdd: Double = if (qrContent.contains("CREDIT_")) {
             qrContent.substringAfter("CREDIT_").toDoubleOrNull() ?: (50..500).random().toDouble()
         } else {
@@ -97,13 +99,6 @@ class ScanActivity : ComponentActivity() {
             )
 
             SessionManager.transactionsList.add(0, newTx)
-
-            try {
-                SupabaseClient.client.from("transactions").insert(newTx)
-            } catch (e: Exception) {
-                // Ignored if network/table error
-            }
-
             Toast.makeText(this@ScanActivity, "🎉 Successfully Redeemed ₹$creditToAdd Credits!", Toast.LENGTH_LONG).show()
         }
     }

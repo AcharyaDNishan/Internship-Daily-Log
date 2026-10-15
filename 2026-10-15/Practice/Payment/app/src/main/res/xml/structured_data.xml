@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<metadata>
+    <type>FinancialApplication</type>
+    <name>Payment App</name>
+    <description>Secure mobile payments, QR scanning, and transaction management app.</description>
+    <publisher>Payment Inc.</publisher>
+    <supportPhone>tel:9761611492</supportPhone>
+</metadata>

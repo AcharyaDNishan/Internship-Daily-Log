@@ -1,6 +1,7 @@
 package com.example.payment
 
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.widget.TextView
 import android.widget.Toast
@@ -24,11 +25,30 @@ class ProfileActivity : ComponentActivity() {
         if (user != null) {
             tvProfileName?.text = "${user.firstName} ${user.lastName}".trim()
             tvProfileContact?.text = "Phone: ${user.phone}"
-            tvUpiId?.text = "UID: ${user.uid} | Credit Balance: ₹${user.creditBalance}"
+            tvUpiId?.text = "UID: ${user.uid} | Account Credit: ₹${user.creditBalance}"
+
+            // Tap to call number
+            tvProfileContact?.setOnClickListener {
+                val callIntent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:${user.phone}"))
+                try {
+                    startActivity(callIntent)
+                } catch (e: Exception) {
+                    Toast.makeText(this, "Calling ${user.phone}", Toast.LENGTH_SHORT).show()
+                }
+            }
         } else {
             tvProfileName?.text = "Guest User"
-            tvProfileContact?.text = "Not logged in"
-            tvUpiId?.text = "Credit Balance: ₹0.00"
+            tvProfileContact?.text = "Phone: 9761611492"
+            tvUpiId?.text = "Account Credit: ₹0.00"
+
+            tvProfileContact?.setOnClickListener {
+                val callIntent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:9761611492"))
+                try {
+                    startActivity(callIntent)
+                } catch (e: Exception) {
+                    Toast.makeText(this, "Calling 9761611492", Toast.LENGTH_SHORT).show()
+                }
+            }
         }
 
         btnLogout?.setOnClickListener {

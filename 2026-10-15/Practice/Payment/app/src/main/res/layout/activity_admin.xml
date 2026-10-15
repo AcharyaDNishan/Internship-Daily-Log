@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F8FAFC"
+    android:background="@color/flat_bg"
     tools:context=".AdminActivity">
 
     <ScrollView
@@ -34,8 +34,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:text="Admin Dashboard"
-                android:textColor="#1E293B"
-                android:textSize="28sp"
+                android:textColor="@color/text_primary"
+                android:textSize="26sp"
                 android:textStyle="bold"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -47,7 +47,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
                 android:text="Manage QR codes, users, and credits"
-                android:textColor="#64748B"
+                android:textColor="@color/text_secondary"
                 android:textSize="14sp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -61,10 +61,11 @@
                 android:layout_marginTop="32dp"
                 android:clickable="true"
                 android:focusable="true"
-                app:cardBackgroundColor="#FFFFFF"
+                app:cardBackgroundColor="@color/flat_surface"
                 app:cardCornerRadius="16dp"
-                app:cardElevation="2dp"
-                app:strokeWidth="0dp"
+                app:cardElevation="1dp"
+                app:strokeColor="@color/border_color"
+                app:strokeWidth="1dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/tvAdminSubtitle">
@@ -79,7 +80,7 @@
                         android:layout_width="48dp"
                         android:layout_height="48dp"
                         android:src="@drawable/scan"
-                        app:tint="#3B82F6" />
+                        app:tint="@color/red_primary" />
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -91,7 +92,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="QR Code Creation"
-                            android:textColor="#1E293B"
+                            android:textColor="@color/text_primary"
                             android:textSize="18sp"
                             android:textStyle="bold" />
 
@@ -100,7 +101,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="4dp"
                             android:text="Generate single QR code or bulk 100 random credit QR codes"
-                            android:textColor="#64748B"
+                            android:textColor="@color/text_secondary"
                             android:textSize="13sp" />
                     </LinearLayout>
                 </LinearLayout>
@@ -114,10 +115,11 @@
                 android:layout_marginTop="16dp"
                 android:clickable="true"
                 android:focusable="true"
-                app:cardBackgroundColor="#FFFFFF"
+                app:cardBackgroundColor="@color/flat_surface"
                 app:cardCornerRadius="16dp"
-                app:cardElevation="2dp"
-                app:strokeWidth="0dp"
+                app:cardElevation="1dp"
+                app:strokeColor="@color/border_color"
+                app:strokeWidth="1dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/cvCreateQr">
@@ -132,7 +134,7 @@
                         android:layout_width="48dp"
                         android:layout_height="48dp"
                         android:src="@drawable/profile"
-                        app:tint="#10B981" />
+                        app:tint="@color/red_primary" />
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -144,7 +146,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="View All Users"
-                            android:textColor="#1E293B"
+                            android:textColor="@color/text_primary"
                             android:textSize="18sp"
                             android:textStyle="bold" />
 
@@ -153,7 +155,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="4dp"
                             android:text="View registered users, UIDs, phone numbers, and balances"
-                            android:textColor="#64748B"
+                            android:textColor="@color/text_secondary"
                             android:textSize="13sp" />
                     </LinearLayout>
                 </LinearLayout>
@@ -167,11 +169,11 @@
                 android:layout_marginTop="32dp"
                 android:text="Log Out Admin"
                 android:textAllCaps="false"
-                android:textColor="#DC2626"
+                android:textColor="@color/red_primary"
                 android:textSize="15sp"
                 android:textStyle="bold"
                 app:cornerRadius="12dp"
-                app:strokeColor="#DC2626"
+                app:strokeColor="@color/red_primary"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/cvViewUsers" />
