@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#F8FAFC"
-    tools:context=".MainActivity">
+    tools:context=".HistoryActivity">
 
     <!-- Header Title -->
     <TextView
@@ -48,7 +48,16 @@
         app:boxCornerRadiusTopStart="12dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tvHistorySubtitle"/>
+        app:layout_constraintTop_toBottomOf="@id/tvHistorySubtitle"
+        app:startIconDrawable="@drawable/history">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etSearch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="text"
+            android:maxLines="1" />
+    </com.google.android.material.textfield.TextInputLayout>
 
     <!-- Scrollable Transaction List -->
     <androidx.core.widget.NestedScrollView
@@ -63,6 +72,7 @@
         app:layout_constraintTop_toBottomOf="@id/tilSearch">
 
         <LinearLayout
+            android:id="@+id/llTransactionContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
@@ -75,15 +85,6 @@
                 app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                 tools:itemCount="5"
                 tools:listitem="@layout/item_transaction" />
-
-            <!-- Fallback Static Items for Preview/Initial Display -->
-            <include layout="@layout/item_transaction" />
-
-            <include layout="@layout/item_transaction" />
-
-            <include layout="@layout/item_transaction" />
-
-            <include layout="@layout/item_transaction" />
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
