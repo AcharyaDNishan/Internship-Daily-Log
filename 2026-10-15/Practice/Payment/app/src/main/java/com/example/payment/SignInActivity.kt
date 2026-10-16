@@ -9,6 +9,7 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
+import io.github.jan.supabase.postgrest.from
 import kotlinx.coroutines.launch
 
 class SignInActivity : ComponentActivity() {
@@ -66,27 +67,28 @@ class SignInActivity : ComponentActivity() {
                 return@setOnClickListener
             }
 
-            if (SessionManager.usersList.any { it.phone == phone }) {
-                tilPhoneNumber?.error = "An account with this phone number already exists"
-                return@setOnClickListener
-            }
-
-            val newUid = SessionManager.generateUnique9DigitUid()
-            val newUser = User(
-                uid = newUid,
-                phone = phone,
-                password = password,
-                firstName = firstName,
-                lastName = lastName,
-                creditBalance = 100.0 // Welcome bonus
-            )
-
             lifecycleScope.launch {
+                val newUid = SessionManager.generateUnique9DigitUid()
+                val newUser = User(
+                    uid = newUid,
+                    phone = phone,
+                    password = password,
+                    firstName = firstName,
+                    lastName = lastName,
+                    creditBalance = 0.0 // Account starts at zero credit
+                )
+
+                try {
+                    SupabaseClient.client.from("users").insert(newUser)
+                } catch (e: Exception) {
+                    // Fallback to local session
+                }
+
                 SessionManager.usersList.add(newUser)
                 SessionManager.currentUser = newUser
                 SessionManager.isAdmin = false
 
-                Toast.makeText(this@SignInActivity, "Account Created! Your Unique UID: $newUid", Toast.LENGTH_LONG).show()
+                Toast.makeText(this@SignInActivity, "Account Created! Unique UID: $newUid | Balance: Rs. 0.00", Toast.LENGTH_LONG).show()
                 startActivity(Intent(this@SignInActivity, ProfileActivity::class.java))
                 finish()
             }

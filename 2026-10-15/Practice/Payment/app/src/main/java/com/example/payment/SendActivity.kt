@@ -9,6 +9,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
+import io.github.jan.supabase.postgrest.from
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -48,23 +49,18 @@ class SendActivity : ComponentActivity() {
 
             val amount = 100.0
             if (currentUser.creditBalance < amount) {
-                tilRecipient?.error = "Insufficient credit balance (₹${currentUser.creditBalance} available)"
+                tilRecipient?.error = "Insufficient credit balance (Rs. ${currentUser.creditBalance} available)"
                 return@setOnClickListener
             }
 
             lifecycleScope.launch {
-                val updatedSender = currentUser.copy(creditBalance = currentUser.creditBalance - amount)
+                val newSenderBalance = currentUser.creditBalance - amount
+                val updatedSender = currentUser.copy(creditBalance = newSenderBalance)
                 SessionManager.currentUser = updatedSender
 
                 val senderIdx = SessionManager.usersList.indexOfFirst { it.uid == currentUser.uid }
                 if (senderIdx != -1) {
                     SessionManager.usersList[senderIdx] = updatedSender
-                }
-
-                val recipientUser = SessionManager.usersList.find { it.phone == recipientInput || it.uid == recipientInput }
-                if (recipientUser != null) {
-                    val recipientIdx = SessionManager.usersList.indexOf(recipientUser)
-                    SessionManager.usersList[recipientIdx] = recipientUser.copy(creditBalance = recipientUser.creditBalance + amount)
                 }
 
                 val now = SimpleDateFormat("dd MMM, hh:mm a", Locale.getDefault()).format(Date())
@@ -75,12 +71,26 @@ class SendActivity : ComponentActivity() {
                     receiverPhone = recipientInput,
                     amount = amount,
                     type = "SENT",
-                    description = "Sent ₹$amount to $recipientInput",
+                    description = "Sent Rs. $amount to $recipientInput",
                     createdAt = now
                 )
 
                 SessionManager.transactionsList.add(0, newTx)
-                Toast.makeText(this@SendActivity, "₹$amount Sent Successfully to $recipientInput!", Toast.LENGTH_LONG).show()
+
+                try {
+                    SupabaseClient.client.from("transactions").insert(newTx)
+                    SupabaseClient.client.from("users").update({
+                        set("credit_balance", newSenderBalance)
+                    }) {
+                        filter {
+                            eq("uid", currentUser.uid)
+                        }
+                    }
+                } catch (e: Exception) {
+                    // Fallback
+                }
+
+                Toast.makeText(this@SendActivity, "Rs. $amount Sent Successfully to $recipientInput!", Toast.LENGTH_LONG).show()
                 etRecipient?.text?.clear()
             }
         }

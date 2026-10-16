@@ -25,9 +25,8 @@ class ProfileActivity : ComponentActivity() {
         if (user != null) {
             tvProfileName?.text = "${user.firstName} ${user.lastName}".trim()
             tvProfileContact?.text = "Phone: ${user.phone}"
-            tvUpiId?.text = "UID: ${user.uid} | Account Credit: ₹${user.creditBalance}"
+            tvUpiId?.text = "UID: ${user.uid} | Account Credit: Rs. ${user.creditBalance}"
 
-            // Tap to call number
             tvProfileContact?.setOnClickListener {
                 val callIntent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:${user.phone}"))
                 try {
@@ -39,7 +38,7 @@ class ProfileActivity : ComponentActivity() {
         } else {
             tvProfileName?.text = "Guest User"
             tvProfileContact?.text = "Phone: 9761611492"
-            tvUpiId?.text = "Account Credit: ₹0.00"
+            tvUpiId?.text = "Account Credit: Rs. 0.00"
 
             tvProfileContact?.setOnClickListener {
                 val callIntent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:9761611492"))

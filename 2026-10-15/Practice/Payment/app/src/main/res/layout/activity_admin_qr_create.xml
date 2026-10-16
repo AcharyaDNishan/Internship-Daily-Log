@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F8FAFC"
+    android:background="@color/flat_bg"
     tools:context=".AdminQrCreateActivity">
 
     <ScrollView
@@ -23,7 +23,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:text="QR Code Creation"
-                android:textColor="#1E293B"
+                android:textColor="@color/text_primary"
                 android:textSize="26sp"
                 android:textStyle="bold"
                 app:layout_constraintStart_toStartOf="parent"
@@ -35,7 +35,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
                 android:text="Generate QR codes with credit values"
-                android:textColor="#64748B"
+                android:textColor="@color/text_secondary"
                 android:textSize="14sp"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/tvTitle" />
@@ -69,8 +69,10 @@
                 android:layout_width="0dp"
                 android:layout_height="52dp"
                 android:layout_marginTop="16dp"
+                android:backgroundTint="@color/red_primary"
                 android:text="Generate Single QR Code"
                 android:textAllCaps="false"
+                android:textColor="@color/white"
                 android:textSize="15sp"
                 android:textStyle="bold"
                 app:cornerRadius="12dp"
@@ -83,31 +85,48 @@
                 android:id="@+id/btnGenerate100Bulk"
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                 android:layout_width="0dp"
-                android:layout_height="56dp"
+                android:layout_height="52dp"
                 android:layout_marginTop="16dp"
                 android:text="Generate 100 QR Codes (₹50 - ₹500)"
                 android:textAllCaps="false"
-                android:textColor="#3B82F6"
+                android:textColor="@color/red_primary"
                 android:textSize="15sp"
                 android:textStyle="bold"
                 app:cornerRadius="12dp"
-                app:strokeColor="#3B82F6"
-                app:strokeWidth="2dp"
+                app:strokeColor="@color/red_primary"
+                app:strokeWidth="1.5dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/btnGenerateSingle" />
 
+            <!-- Export to DOCX Sticker Sheet -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnExportDocx"
+                android:layout_width="0dp"
+                android:layout_height="56dp"
+                android:layout_marginTop="16dp"
+                android:backgroundTint="@color/red_primary"
+                android:text="Export 100 QRs to DOCX (5x6 A4)"
+                android:textAllCaps="false"
+                android:textColor="@color/white"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                app:cornerRadius="12dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/btnGenerate100Bulk" />
+
             <!-- Display QR Code Bitmap -->
             <ImageView
                 android:id="@+id/ivGeneratedQr"
-                android:layout_width="200dp"
-                android:layout_height="200dp"
+                android:layout_width="180dp"
+                android:layout_height="180dp"
                 android:layout_marginTop="24dp"
                 android:contentDescription="Generated QR Code"
                 android:visibility="gone"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/btnGenerate100Bulk" />
+                app:layout_constraintTop_toBottomOf="@id/btnExportDocx" />
 
             <TextView
                 android:id="@+id/tvQrStatus"
@@ -115,7 +134,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:gravity="center"
-                android:textColor="#1E293B"
+                android:textColor="@color/text_primary"
                 android:textSize="14sp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"

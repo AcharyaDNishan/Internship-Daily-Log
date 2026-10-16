@@ -27,6 +27,7 @@ class HistoryActivity : ComponentActivity() {
         val currentUser = SessionManager.currentUser
         val rvTransactions = findViewById<RecyclerView>(R.id.rvTransactions)
         val etSearch = findViewById<TextInputEditText>(R.id.etSearch)
+        val tvEmptyHistory = findViewById<TextView>(R.id.tvEmptyHistory)
 
         val userTransactions = SessionManager.transactionsList.filter {
             currentUser == null || it.senderUid == currentUser.uid || it.receiverUid == currentUser.uid || it.senderPhone == currentUser.phone || it.receiverPhone == currentUser.phone
@@ -34,6 +35,14 @@ class HistoryActivity : ComponentActivity() {
 
         fullList.clear()
         fullList.addAll(userTransactions)
+
+        if (fullList.isEmpty()) {
+            tvEmptyHistory?.visibility = View.VISIBLE
+            rvTransactions?.visibility = View.GONE
+        } else {
+            tvEmptyHistory?.visibility = View.GONE
+            rvTransactions?.visibility = View.VISIBLE
+        }
 
         adapter = TransactionAdapter(fullList)
         rvTransactions?.layoutManager = LinearLayoutManager(this)
@@ -115,15 +124,15 @@ class HistoryActivity : ComponentActivity() {
             val tx = list[position]
             holder.tvTitle.text = tx.description.ifEmpty { "Transfer" }
             holder.tvDate.text = tx.createdAt.ifEmpty { "Recent" }
-            holder.tvAmount.text = "₹${tx.amount}"
+            holder.tvAmount.text = "Rs. ${tx.amount}"
             holder.tvStatus.text = "Completed"
 
             if (tx.type == "QR_REDEEM" || tx.type == "RECEIVED") {
                 holder.tvAmount.setTextColor(0xFF16A34A.toInt())
-                holder.tvAmount.text = "+ ₹${tx.amount}"
+                holder.tvAmount.text = "+ Rs. ${tx.amount}"
             } else {
                 holder.tvAmount.setTextColor(0xFFDC2626.toInt())
-                holder.tvAmount.text = "- ₹${tx.amount}"
+                holder.tvAmount.text = "- Rs. ${tx.amount}"
             }
         }
 

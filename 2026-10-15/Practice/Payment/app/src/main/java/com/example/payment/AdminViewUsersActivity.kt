@@ -40,7 +40,7 @@ class AdminViewUsersActivity : ComponentActivity() {
             holder.tvUserName.text = "${u.firstName} ${u.lastName}".trim().ifEmpty { "User" }
             holder.tvUserPhone.text = "Phone: ${u.phone}"
             holder.tvUserUid.text = "UID: ${u.uid}"
-            holder.tvUserBalance.text = "₹${u.creditBalance}"
+            holder.tvUserBalance.text = "Rs. ${u.creditBalance}"
         }
 
         override fun getItemCount(): Int = users.size

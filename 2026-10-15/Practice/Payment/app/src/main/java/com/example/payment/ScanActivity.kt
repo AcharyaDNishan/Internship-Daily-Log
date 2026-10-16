@@ -10,6 +10,7 @@ import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
 import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanOptions
+import io.github.jan.supabase.postgrest.from
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -31,7 +32,6 @@ class ScanActivity : ComponentActivity() {
 
         val cvViewfinder = findViewById<MaterialCardView>(R.id.cvViewfinder)
         val btnFlash = findViewById<MaterialButton>(R.id.btnFlash)
-        val btnGallery = findViewById<MaterialButton>(R.id.btnGallery)
 
         cvViewfinder?.setOnClickListener {
             startQrScanner()
@@ -41,17 +41,12 @@ class ScanActivity : ComponentActivity() {
             startQrScanner()
         }
 
-        btnGallery?.setOnClickListener {
-            val randomCredit = (50..500).random().toDouble()
-            handleScannedQrContent("QR_PAY_${System.currentTimeMillis()}_CREDIT_$randomCredit")
-        }
-
         setupBottomNavigation(R.id.nav_scan)
     }
 
     private fun startQrScanner() {
         val options = ScanOptions()
-        options.setPrompt("Align QR code inside viewfinder to scan")
+        options.setPrompt("Align QR code inside camera viewfinder to scan")
         options.setBeepEnabled(true)
         options.setOrientationLocked(false)
         qrScannerLauncher.launch(options)
@@ -78,7 +73,8 @@ class ScanActivity : ComponentActivity() {
         }
 
         lifecycleScope.launch {
-            val updatedUser = currentUser.copy(creditBalance = currentUser.creditBalance + creditToAdd)
+            val newBalance = currentUser.creditBalance + creditToAdd
+            val updatedUser = currentUser.copy(creditBalance = newBalance)
             SessionManager.currentUser = updatedUser
 
             val userIdx = SessionManager.usersList.indexOfFirst { it.uid == currentUser.uid }
@@ -94,12 +90,26 @@ class ScanActivity : ComponentActivity() {
                 receiverPhone = currentUser.phone,
                 amount = creditToAdd,
                 type = "QR_REDEEM",
-                description = "Redeemed QR Credit: ₹$creditToAdd",
+                description = "Redeemed QR Credit: Rs. $creditToAdd",
                 createdAt = now
             )
 
             SessionManager.transactionsList.add(0, newTx)
-            Toast.makeText(this@ScanActivity, "🎉 Successfully Redeemed ₹$creditToAdd Credits!", Toast.LENGTH_LONG).show()
+
+            try {
+                SupabaseClient.client.from("transactions").insert(newTx)
+                SupabaseClient.client.from("users").update({
+                    set("credit_balance", newBalance)
+                }) {
+                    filter {
+                        eq("uid", currentUser.uid)
+                    }
+                }
+            } catch (e: Exception) {
+                // Fallback
+            }
+
+            Toast.makeText(this@ScanActivity, "🎉 Successfully Redeemed Rs. $creditToAdd Credits!", Toast.LENGTH_LONG).show()
         }
     }
 
