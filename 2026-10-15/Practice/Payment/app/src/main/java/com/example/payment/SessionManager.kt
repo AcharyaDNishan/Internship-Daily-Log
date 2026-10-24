@@ -7,6 +7,7 @@ object SessionManager {
     val usersList = mutableListOf<User>()
     val transactionsList = mutableListOf<TransactionItem>()
     val qrCodesList = mutableListOf<QrCodeData>()
+    val redeemedQrCodesSet = mutableSetOf<String>()
 
     init {
         val defaultUser = User(
@@ -15,9 +16,23 @@ object SessionManager {
             password = "Password123",
             firstName = "Shubham",
             lastName = "Sharma",
-            creditBalance = 0.0 // Account starts at zero
+            creditBalance = 0.0
         )
         usersList.add(defaultUser)
+    }
+
+    fun isQrRedeemed(qrId: String): Boolean {
+        if (redeemedQrCodesSet.contains(qrId)) return true
+        val foundQr = qrCodesList.find { it.qrCodeId == qrId }
+        return foundQr?.isRedeemed == true
+    }
+
+    fun markQrRedeemed(qrId: String, redeemedByUid: String) {
+        redeemedQrCodesSet.add(qrId)
+        val index = qrCodesList.indexOfFirst { it.qrCodeId == qrId }
+        if (index != -1) {
+            qrCodesList[index] = qrCodesList[index].copy(isRedeemed = true, redeemedByUid = redeemedByUid)
+        }
     }
 
     fun generateUnique9DigitUid(): String {

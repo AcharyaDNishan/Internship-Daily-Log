@@ -9,13 +9,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.activity.ComponentActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.textfield.TextInputEditText
 
-class HistoryActivity : ComponentActivity() {
+class HistoryActivity : BaseSecureActivity() {
 
     private lateinit var adapter: TransactionAdapter
     private val fullList = mutableListOf<TransactionItem>()

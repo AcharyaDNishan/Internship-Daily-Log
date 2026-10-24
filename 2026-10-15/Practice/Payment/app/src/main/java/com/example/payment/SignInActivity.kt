@@ -4,7 +4,6 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.TextView
 import android.widget.Toast
-import androidx.activity.ComponentActivity
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
@@ -12,7 +11,7 @@ import com.google.android.material.textfield.TextInputLayout
 import io.github.jan.supabase.postgrest.from
 import kotlinx.coroutines.launch
 
-class SignInActivity : ComponentActivity() {
+class SignInActivity : BaseSecureActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -69,19 +68,21 @@ class SignInActivity : ComponentActivity() {
 
             lifecycleScope.launch {
                 val newUid = SessionManager.generateUnique9DigitUid()
+                val hashedPassword = PasswordHasher.hashPassword(password)
+
                 val newUser = User(
                     uid = newUid,
                     phone = phone,
-                    password = password,
+                    password = hashedPassword,
                     firstName = firstName,
                     lastName = lastName,
-                    creditBalance = 0.0 // Account starts at zero credit
+                    creditBalance = 0.0
                 )
 
                 try {
                     SupabaseClient.client.from("users").insert(newUser)
                 } catch (e: Exception) {
-                    // Fallback to local session
+                    // Fallback
                 }
 
                 SessionManager.usersList.add(newUser)

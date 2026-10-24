@@ -26,7 +26,7 @@
                 android:id="@+id/ivSendHeader"
                 android:layout_width="72dp"
                 android:layout_height="72dp"
-                android:layout_marginTop="32dp"
+                android:layout_marginTop="24dp"
                 android:contentDescription="Send Money"
                 android:src="@drawable/send"
                 app:tint="@color/red_primary"
@@ -52,24 +52,27 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
-                android:text="Enter phone number or UID"
+                android:text="Enter recipient phone number and amount"
                 android:textColor="@color/text_secondary"
                 android:textSize="14sp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/tvSendTitle" />
 
+            <!-- Recipient Phone Number Input Field with Black Border -->
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/tilRecipient"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="32dp"
-                android:hint="Enter Mobile Number / UID"
+                android:layout_marginTop="28dp"
+                android:hint="Phone Number"
                 app:boxCornerRadiusBottomEnd="12dp"
                 app:boxCornerRadiusBottomStart="12dp"
                 app:boxCornerRadiusTopEnd="12dp"
                 app:boxCornerRadiusTopStart="12dp"
+                app:boxStrokeColor="@color/black"
+                app:boxStrokeWidth="1.5dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/tvSendSubtitle">
@@ -78,7 +81,33 @@
                     android:id="@+id/etRecipient"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:inputType="text"
+                    android:inputType="phone"
+                    android:maxLines="1" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Amount Input Field with Black Border -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilAmount"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:hint="Amount (Rs.)"
+                app:boxCornerRadiusBottomEnd="12dp"
+                app:boxCornerRadiusBottomStart="12dp"
+                app:boxCornerRadiusTopEnd="12dp"
+                app:boxCornerRadiusTopStart="12dp"
+                app:boxStrokeColor="@color/black"
+                app:boxStrokeWidth="1.5dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tilRecipient">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etAmount"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="numberDecimal"
                     android:maxLines="1" />
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -86,7 +115,7 @@
                 android:id="@+id/btnSend"
                 android:layout_width="0dp"
                 android:layout_height="56dp"
-                android:layout_marginTop="24dp"
+                android:layout_marginTop="28dp"
                 android:backgroundTint="@color/red_primary"
                 android:text="Send"
                 android:textAllCaps="false"
@@ -96,7 +125,7 @@
                 app:cornerRadius="12dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/tilRecipient" />
+                app:layout_constraintTop_toBottomOf="@id/tilAmount" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </ScrollView>

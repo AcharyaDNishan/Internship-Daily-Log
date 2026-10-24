@@ -3,7 +3,6 @@ package com.example.payment
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
-import androidx.activity.ComponentActivity
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.button.MaterialButton
@@ -15,7 +14,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-class SendActivity : ComponentActivity() {
+class SendActivity : BaseSecureActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -23,6 +22,8 @@ class SendActivity : ComponentActivity() {
 
         val tilRecipient = findViewById<TextInputLayout>(R.id.tilRecipient)
         val etRecipient = findViewById<TextInputEditText>(R.id.etRecipient)
+        val tilAmount = findViewById<TextInputLayout>(R.id.tilAmount)
+        val etAmount = findViewById<TextInputEditText>(R.id.etAmount)
         val btnSend = findViewById<MaterialButton>(R.id.btnSend)
 
         btnSend?.setOnClickListener {
@@ -31,11 +32,21 @@ class SendActivity : ComponentActivity() {
                 return@setOnClickListener
             }
 
-            val recipientInput = SecurityValidator.sanitizeText(etRecipient?.text?.toString().orEmpty())
-            tilRecipient?.error = null
+            val recipientPhone = SecurityValidator.sanitizeText(etRecipient?.text?.toString().orEmpty())
+            val amountStr = etAmount?.text?.toString()?.trim().orEmpty()
+            val sendAmount = amountStr.toDoubleOrNull() ?: 0.0
 
-            if (recipientInput.isEmpty()) {
-                tilRecipient?.error = "Please enter mobile number or UID"
+            tilRecipient?.error = null
+            tilAmount?.error = null
+
+            val phoneErr = SecurityValidator.validatePhoneNumber(recipientPhone)
+            if (phoneErr != null) {
+                tilRecipient?.error = phoneErr
+                return@setOnClickListener
+            }
+
+            if (sendAmount <= 0) {
+                tilAmount?.error = "Please enter a valid amount greater than 0"
                 return@setOnClickListener
             }
 
@@ -47,14 +58,18 @@ class SendActivity : ComponentActivity() {
                 return@setOnClickListener
             }
 
-            val amount = 100.0
-            if (currentUser.creditBalance < amount) {
-                tilRecipient?.error = "Insufficient credit balance (Rs. ${currentUser.creditBalance} available)"
+            if (currentUser.phone == recipientPhone) {
+                tilRecipient?.error = "Cannot send money to your own phone number"
+                return@setOnClickListener
+            }
+
+            if (currentUser.creditBalance < sendAmount) {
+                tilAmount?.error = "Insufficient credit balance (Rs. ${currentUser.creditBalance} available)"
                 return@setOnClickListener
             }
 
             lifecycleScope.launch {
-                val newSenderBalance = currentUser.creditBalance - amount
+                val newSenderBalance = currentUser.creditBalance - sendAmount
                 val updatedSender = currentUser.copy(creditBalance = newSenderBalance)
                 SessionManager.currentUser = updatedSender
 
@@ -63,15 +78,22 @@ class SendActivity : ComponentActivity() {
                     SessionManager.usersList[senderIdx] = updatedSender
                 }
 
+                // Add to recipient balance if registered
+                val recipientUser = SessionManager.usersList.find { it.phone == recipientPhone || it.uid == recipientPhone }
+                if (recipientUser != null) {
+                    val recipientIdx = SessionManager.usersList.indexOf(recipientUser)
+                    SessionManager.usersList[recipientIdx] = recipientUser.copy(creditBalance = recipientUser.creditBalance + sendAmount)
+                }
+
                 val now = SimpleDateFormat("dd MMM, hh:mm a", Locale.getDefault()).format(Date())
                 val newTx = TransactionItem(
                     senderUid = currentUser.uid,
-                    receiverUid = recipientInput,
+                    receiverUid = recipientPhone,
                     senderPhone = currentUser.phone,
-                    receiverPhone = recipientInput,
-                    amount = amount,
+                    receiverPhone = recipientPhone,
+                    amount = sendAmount,
                     type = "SENT",
-                    description = "Sent Rs. $amount to $recipientInput",
+                    description = "Sent Rs. $sendAmount to $recipientPhone",
                     createdAt = now
                 )
 
@@ -90,8 +112,9 @@ class SendActivity : ComponentActivity() {
                     // Fallback
                 }
 
-                Toast.makeText(this@SendActivity, "Rs. $amount Sent Successfully to $recipientInput!", Toast.LENGTH_LONG).show()
+                Toast.makeText(this@SendActivity, "Rs. $sendAmount Sent Successfully to $recipientPhone!", Toast.LENGTH_LONG).show()
                 etRecipient?.text?.clear()
+                etAmount?.text?.clear()
             }
         }
 

@@ -7,7 +7,6 @@ import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
-import androidx.activity.ComponentActivity
 import androidx.core.content.FileProvider
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
@@ -15,7 +14,7 @@ import com.google.zxing.BarcodeFormat
 import com.journeyapps.barcodescanner.BarcodeEncoder
 import java.util.UUID
 
-class AdminQrCreateActivity : ComponentActivity() {
+class AdminQrCreateActivity : BaseSecureActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -25,6 +24,7 @@ class AdminQrCreateActivity : ComponentActivity() {
         val btnGenerateSingle = findViewById<MaterialButton>(R.id.btnGenerateSingle)
         val btnGenerate100Bulk = findViewById<MaterialButton>(R.id.btnGenerate100Bulk)
         val btnExportDocx = findViewById<MaterialButton>(R.id.btnExportDocx)
+        val btnExportPdf = findViewById<MaterialButton>(R.id.btnExportPdf)
         val ivGeneratedQr = findViewById<ImageView>(R.id.ivGeneratedQr)
         val tvQrStatus = findViewById<TextView>(R.id.tvQrStatus)
 
@@ -45,7 +45,7 @@ class AdminQrCreateActivity : ComponentActivity() {
 
             SessionManager.qrCodesList.add(qrData)
 
-            val qrPayload = "QR_PAY_${qrId}_CREDIT_$creditAmount"
+            val qrPayload = HmacQrSigner.signQrPayload(qrId, creditAmount)
             val bitmap = generateQrBitmap(qrPayload)
             if (bitmap != null) {
                 ivGeneratedQr?.setImageBitmap(bitmap)
@@ -53,7 +53,7 @@ class AdminQrCreateActivity : ComponentActivity() {
             }
 
             tvQrStatus?.text = "Generated Single QR Code: $qrId\nCredit Value: Rs. $creditAmount"
-            Toast.makeText(this, "Single QR Code Generated!", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Digitally Signed QR Code Generated!", Toast.LENGTH_SHORT).show()
         }
 
         btnGenerate100Bulk?.setOnClickListener {
@@ -61,15 +61,15 @@ class AdminQrCreateActivity : ComponentActivity() {
             SessionManager.qrCodesList.addAll(bulkList)
 
             val sampleQr = bulkList.last()
-            val samplePayload = "QR_PAY_${sampleQr.qrCodeId}_CREDIT_${sampleQr.creditAmount}"
+            val samplePayload = HmacQrSigner.signQrPayload(sampleQr.qrCodeId, sampleQr.creditAmount)
             val bitmap = generateQrBitmap(samplePayload)
             if (bitmap != null) {
                 ivGeneratedQr?.setImageBitmap(bitmap)
                 ivGeneratedQr?.visibility = View.VISIBLE
             }
 
-            tvQrStatus?.text = "Created 100 QR Codes!\nCredits per QR: Rs. 50 to Rs. 500\nTotal Pool: ${SessionManager.qrCodesList.size} QR Codes"
-            Toast.makeText(this, "🎉 100 Random Credit QR Codes Created!", Toast.LENGTH_LONG).show()
+            tvQrStatus?.text = "Created 100 Signed QR Codes!\nCredits per QR: Rs. 50 to Rs. 500\nTotal Pool: ${SessionManager.qrCodesList.size} QR Codes"
+            Toast.makeText(this, "🎉 100 Signed Credit QR Codes Created!", Toast.LENGTH_LONG).show()
         }
 
         btnExportDocx?.setOnClickListener {
@@ -79,22 +79,66 @@ class AdminQrCreateActivity : ComponentActivity() {
             }
 
             try {
-                val exportedFile = DocxExporter.generateQrStickersDocx(this, SessionManager.qrCodesList.take(100))
+                val docxFile = DocxExporter.generateQrStickersDocx(this, SessionManager.qrCodesList.take(100))
+                val contentUri = FileProvider.getUriForFile(this, "$packageName.provider", docxFile)
 
-                tvQrStatus?.text = "✅ Exported 100 QR Stickers DOCX (5x6 A4 Grid)!\nFile Saved: ${exportedFile.name}"
-                Toast.makeText(this, "📄 DOCX Created: ${exportedFile.name}", Toast.LENGTH_LONG).show()
+                val viewIntent = Intent(Intent.ACTION_VIEW).apply {
+                    setDataAndType(contentUri, "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
 
-                // Share / Open Intent
-                val contentUri = FileProvider.getUriForFile(this, "$packageName.provider", exportedFile)
                 val shareIntent = Intent(Intent.ACTION_SEND).apply {
                     type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                     putExtra(Intent.EXTRA_STREAM, contentUri)
                     addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                 }
-                startActivity(Intent.createChooser(shareIntent, "Open or Share Printable QR DOCX"))
+
+                val chooser = Intent.createChooser(viewIntent, "Open or Share DOCX Sticker Sheet").apply {
+                    putExtra(Intent.EXTRA_INITIAL_INTENTS, arrayOf(shareIntent))
+                }
+
+                tvQrStatus?.text = "✅ Exported 100 QR DOCX Stickers (5x6 A4 Grid)!\nFile: ${docxFile.name}"
+                Toast.makeText(this, "📄 DOCX Created: ${docxFile.name}", Toast.LENGTH_LONG).show()
+                startActivity(chooser)
 
             } catch (e: Exception) {
                 Toast.makeText(this, "Error exporting DOCX: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        btnExportPdf?.setOnClickListener {
+            if (SessionManager.qrCodesList.isEmpty()) {
+                val bulkList = generate100RandomQrCodes()
+                SessionManager.qrCodesList.addAll(bulkList)
+            }
+
+            try {
+                val pdfFile = PdfExporter.generateQrStickersPdf(this, SessionManager.qrCodesList.take(100))
+                val contentUri = FileProvider.getUriForFile(this, "$packageName.provider", pdfFile)
+
+                val viewIntent = Intent(Intent.ACTION_VIEW).apply {
+                    setDataAndType(contentUri, "application/pdf")
+                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
+
+                val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                    type = "application/pdf"
+                    putExtra(Intent.EXTRA_STREAM, contentUri)
+                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                }
+
+                val chooser = Intent.createChooser(viewIntent, "Open or Print QR PDF").apply {
+                    putExtra(Intent.EXTRA_INITIAL_INTENTS, arrayOf(shareIntent))
+                }
+
+                tvQrStatus?.text = "✅ Created Printable A4 PDF (5x6 Grid)!\nFile: ${pdfFile.name}"
+                Toast.makeText(this, "🖨️ PDF Created: ${pdfFile.name}", Toast.LENGTH_LONG).show()
+                startActivity(chooser)
+
+            } catch (e: Exception) {
+                Toast.makeText(this, "Error exporting PDF: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
             }
         }
     }

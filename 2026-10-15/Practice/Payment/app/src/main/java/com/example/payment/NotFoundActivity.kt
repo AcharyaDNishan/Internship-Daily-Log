@@ -2,10 +2,9 @@ package com.example.payment
 
 import android.content.Intent
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import com.google.android.material.button.MaterialButton
 
-class NotFoundActivity : ComponentActivity() {
+class NotFoundActivity : BaseSecureActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

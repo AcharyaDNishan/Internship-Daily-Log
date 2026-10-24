@@ -2,9 +2,8 @@ package com.example.payment
 
 import android.content.Intent
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 
-class MainActivity : ComponentActivity() {
+class MainActivity : BaseSecureActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
