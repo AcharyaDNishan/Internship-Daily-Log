@@ -7,9 +7,14 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 class Secondary : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -24,6 +29,16 @@ class Secondary : ComponentActivity() {
                 Image(
                     painter = r,
                     contentDescription = null
+                )
+                Text(
+                    text="All Tasks Completed!",
+                    fontWeight = FontWeight.Bold,
+                    modifier=Modifier
+                        .padding(top=24.dp, bottom=8.dp)
+                )
+                Text(
+                    text="Nice Work!",
+                    fontSize = 16.sp
                 )
             }
         }
