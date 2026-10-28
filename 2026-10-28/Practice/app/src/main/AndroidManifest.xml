@@ -26,6 +26,9 @@
         <activity
             android:name=".Secondary"
             android:exported="false" />
+        <activity
+            android:name=".Third"
+            android:exported="false" />
     </application>
 
 </manifest>

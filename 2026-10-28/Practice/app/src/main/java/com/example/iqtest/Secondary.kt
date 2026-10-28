@@ -10,9 +10,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -22,30 +24,33 @@ class Secondary : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
+            val context = LocalContext.current
             Column(
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 val r = painterResource(R.drawable.ic_task_completed)
                 Image(
                     painter = r,
-                    contentDescription = null,
+                    contentDescription = "Task Completed",
                     modifier = Modifier
-                        .clickable(onClick = {
-                            val intent = Intent(context, Secondary::class.java)
+                        .size(120.dp)
+                        .clickable {
+                            val intent = Intent(context, Third::class.java)
                             context.startActivity(intent)
-                        })
+                            print("Clicked.")
+                        },
                 )
                 Text(
-                    text="All Tasks Completed!",
+                    text = "All Tasks Completed!",
                     fontWeight = FontWeight.Bold,
-                    modifier=Modifier
-                        .padding(top=24.dp, bottom=8.dp)
+                    modifier = Modifier
+                        .padding(top = 24.dp, bottom = 8.dp),
                 )
                 Text(
-                    text="Nice Work!",
-                    fontSize = 16.sp
+                    text = "Nice Work!",
+                    fontSize = 16.sp,
                 )
             }
         }
