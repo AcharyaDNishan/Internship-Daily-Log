@@ -137,7 +137,7 @@ object DocxExporter {
                     }
                 }
             } catch (e: Exception) {
-                // Ignored
+                // Non-critical fallback
             }
         }
 

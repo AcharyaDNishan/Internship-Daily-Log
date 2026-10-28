@@ -63,6 +63,14 @@ class SendActivity : BaseSecureActivity() {
                 return@setOnClickListener
             }
 
+            // Check if recipient phone number is registered in the database!
+            val recipientUser = SessionManager.usersList.find { it.phone == recipientPhone }
+            if (recipientUser == null) {
+                tilRecipient?.error = "Recipient phone number is not registered. Money cannot be sent."
+                Toast.makeText(this, "❌ Recipient phone number is not registered!", Toast.LENGTH_LONG).show()
+                return@setOnClickListener
+            }
+
             if (currentUser.creditBalance < sendAmount) {
                 tilAmount?.error = "Insufficient credit balance (Rs. ${currentUser.creditBalance} available)"
                 return@setOnClickListener
@@ -78,22 +86,22 @@ class SendActivity : BaseSecureActivity() {
                     SessionManager.usersList[senderIdx] = updatedSender
                 }
 
-                // Add to recipient balance if registered
-                val recipientUser = SessionManager.usersList.find { it.phone == recipientPhone || it.uid == recipientPhone }
-                if (recipientUser != null) {
-                    val recipientIdx = SessionManager.usersList.indexOf(recipientUser)
-                    SessionManager.usersList[recipientIdx] = recipientUser.copy(creditBalance = recipientUser.creditBalance + sendAmount)
+                // Add to registered recipient balance
+                val newRecipientBalance = recipientUser.creditBalance + sendAmount
+                val recipientIdx = SessionManager.usersList.indexOf(recipientUser)
+                if (recipientIdx != -1) {
+                    SessionManager.usersList[recipientIdx] = recipientUser.copy(creditBalance = newRecipientBalance)
                 }
 
                 val now = SimpleDateFormat("dd MMM, hh:mm a", Locale.getDefault()).format(Date())
                 val newTx = TransactionItem(
                     senderUid = currentUser.uid,
-                    receiverUid = recipientPhone,
+                    receiverUid = recipientUser.uid,
                     senderPhone = currentUser.phone,
                     receiverPhone = recipientPhone,
                     amount = sendAmount,
                     type = "SENT",
-                    description = "Sent Rs. $sendAmount to $recipientPhone",
+                    description = "Sent Rs. $sendAmount to ${recipientUser.firstName} ($recipientPhone)",
                     createdAt = now
                 )
 
@@ -108,11 +116,18 @@ class SendActivity : BaseSecureActivity() {
                             eq("uid", currentUser.uid)
                         }
                     }
+                    SupabaseClient.client.from("users").update({
+                        set("credit_balance", newRecipientBalance)
+                    }) {
+                        filter {
+                            eq("uid", recipientUser.uid)
+                        }
+                    }
                 } catch (e: Exception) {
                     // Fallback
                 }
 
-                Toast.makeText(this@SendActivity, "Rs. $sendAmount Sent Successfully to $recipientPhone!", Toast.LENGTH_LONG).show()
+                Toast.makeText(this@SendActivity, "Rs. $sendAmount Sent Successfully to ${recipientUser.firstName} ($recipientPhone)!", Toast.LENGTH_LONG).show()
                 etRecipient?.text?.clear()
                 etAmount?.text?.clear()
             }
