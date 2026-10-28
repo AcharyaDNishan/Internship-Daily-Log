@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.Text
+import androidx.compose.ui.Alignment.Companion.Center
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 
 class Secondary : ComponentActivity() {
@@ -13,8 +14,10 @@ class Secondary : ComponentActivity() {
         setContent {
             Column(
                 horizontalAlignment = CenterHorizontally,
-                
-            )
+                verticalArrangement = Center
+            ){
+                Image(painter=R.)
+            }
         }
     }
 }
