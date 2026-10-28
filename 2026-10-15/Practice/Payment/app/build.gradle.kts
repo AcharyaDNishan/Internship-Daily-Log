@@ -47,6 +47,9 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.material)
 
+    // Security & Encrypted Storage
+    implementation("androidx.security:security-crypto:1.1.0-alpha06")
+
     // Supabase & Ktor
     implementation(platform("io.github.jan-tennert.supabase:bom:3.0.3"))
     implementation("io.github.jan-tennert.supabase:postgrest-kt")

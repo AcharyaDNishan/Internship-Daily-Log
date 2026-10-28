@@ -3,7 +3,6 @@ package com.example.payment
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
-import androidx.activity.ComponentActivity
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.button.MaterialButton
@@ -16,7 +15,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-class ScanActivity : ComponentActivity() {
+class ScanActivity : BaseSecureActivity() {
 
     private val qrScannerLauncher = registerForActivityResult(ScanContract()) { result ->
         if (result.contents != null) {
@@ -66,13 +65,32 @@ class ScanActivity : ComponentActivity() {
             return
         }
 
-        val creditToAdd: Double = if (qrContent.contains("CREDIT_")) {
-            qrContent.substringAfter("CREDIT_").toDoubleOrNull() ?: (50..500).random().toDouble()
+        // Extract QR Code ID from payload
+        val qrId = if (qrContent.contains("QR_PAY_")) {
+            qrContent.substringAfter("QR_PAY_").substringBefore("_CREDIT_")
         } else {
-            (50..500).random().toDouble()
+            qrContent
+        }
+
+        // Check if QR code has already been redeemed! One QR cannot be used twice!
+        if (SessionManager.isQrRedeemed(qrId)) {
+            Toast.makeText(this, "❌ Error: This QR Code has ALREADY been redeemed!", Toast.LENGTH_LONG).show()
+            return
+        }
+
+        val verifiedCredit = HmacQrSigner.verifyAndExtractQrCredit(qrContent)
+        val creditToAdd: Double = when {
+            verifiedCredit != null -> verifiedCredit
+            qrContent.contains("CREDIT_") -> {
+                qrContent.substringAfter("CREDIT_").substringBefore("_SIG_").toDoubleOrNull() ?: (50..500).random().toDouble()
+            }
+            else -> (50..500).random().toDouble()
         }
 
         lifecycleScope.launch {
+            // Mark QR Code as Redeemed
+            SessionManager.markQrRedeemed(qrId, currentUser.uid)
+
             val newBalance = currentUser.creditBalance + creditToAdd
             val updatedUser = currentUser.copy(creditBalance = newBalance)
             SessionManager.currentUser = updatedUser
@@ -86,11 +104,11 @@ class ScanActivity : ComponentActivity() {
             val newTx = TransactionItem(
                 senderUid = "SYSTEM_QR",
                 receiverUid = currentUser.uid,
-                senderPhone = "QR Reward",
+                senderPhone = "Verified QR Reward",
                 receiverPhone = currentUser.phone,
                 amount = creditToAdd,
                 type = "QR_REDEEM",
-                description = "Redeemed QR Credit: Rs. $creditToAdd",
+                description = "Redeemed Verified QR Credit: Rs. $creditToAdd",
                 createdAt = now
             )
 
@@ -103,6 +121,14 @@ class ScanActivity : ComponentActivity() {
                 }) {
                     filter {
                         eq("uid", currentUser.uid)
+                    }
+                }
+                SupabaseClient.client.from("qr_codes").update({
+                    set("is_redeemed", true)
+                    set("redeemed_by_uid", currentUser.uid)
+                }) {
+                    filter {
+                        eq("qr_code_id", qrId)
                     }
                 }
             } catch (e: Exception) {

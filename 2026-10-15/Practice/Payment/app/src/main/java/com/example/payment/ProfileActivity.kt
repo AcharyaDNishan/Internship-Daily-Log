@@ -5,11 +5,10 @@ import android.net.Uri
 import android.os.Bundle
 import android.widget.TextView
 import android.widget.Toast
-import androidx.activity.ComponentActivity
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.button.MaterialButton
 
-class ProfileActivity : ComponentActivity() {
+class ProfileActivity : BaseSecureActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

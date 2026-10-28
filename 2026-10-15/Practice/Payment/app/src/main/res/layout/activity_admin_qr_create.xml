@@ -87,7 +87,7 @@
                 android:layout_width="0dp"
                 android:layout_height="52dp"
                 android:layout_marginTop="16dp"
-                android:text="Generate 100 QR Codes (₹50 - ₹500)"
+                android:text="Generate 100 QR Codes (Rs. 50 - Rs. 500)"
                 android:textAllCaps="false"
                 android:textColor="@color/red_primary"
                 android:textSize="15sp"
@@ -99,22 +99,46 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/btnGenerateSingle" />
 
-            <!-- Export to DOCX Sticker Sheet -->
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnExportDocx"
+            <!-- Export Buttons -->
+            <LinearLayout
+                android:id="@+id/llExportRow"
                 android:layout_width="0dp"
-                android:layout_height="56dp"
+                android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:backgroundTint="@color/red_primary"
-                android:text="Export 100 QRs to DOCX (5x6 A4)"
-                android:textAllCaps="false"
-                android:textColor="@color/white"
-                android:textSize="15sp"
-                android:textStyle="bold"
-                app:cornerRadius="12dp"
+                android:orientation="horizontal"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/btnGenerate100Bulk" />
+                app:layout_constraintTop_toBottomOf="@id/btnGenerate100Bulk">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnExportDocx"
+                    android:layout_width="0dp"
+                    android:layout_height="54dp"
+                    android:layout_marginEnd="6dp"
+                    android:layout_weight="1"
+                    android:backgroundTint="@color/red_primary"
+                    android:text="Export DOCX"
+                    android:textAllCaps="false"
+                    android:textColor="@color/white"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    app:cornerRadius="12dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnExportPdf"
+                    android:layout_width="0dp"
+                    android:layout_height="54dp"
+                    android:layout_marginStart="6dp"
+                    android:layout_weight="1"
+                    android:backgroundTint="@color/red_primary"
+                    android:text="Print / PDF"
+                    android:textAllCaps="false"
+                    android:textColor="@color/white"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    app:cornerRadius="12dp" />
+
+            </LinearLayout>
 
             <!-- Display QR Code Bitmap -->
             <ImageView
@@ -126,7 +150,7 @@
                 android:visibility="gone"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/btnExportDocx" />
+                app:layout_constraintTop_toBottomOf="@id/llExportRow" />
 
             <TextView
                 android:id="@+id/tvQrStatus"
