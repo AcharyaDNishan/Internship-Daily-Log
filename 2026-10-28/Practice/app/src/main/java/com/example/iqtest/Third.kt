@@ -22,39 +22,42 @@ class Third : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            Column(){
-                Row(){
+            Column() {
+                Row() {
                     Text(
-                        text="One Box",
-                        modifier =Modifier
+                        text = "One Box",
+                        modifier = Modifier
                             .width(250.dp)
                             .padding(16.dp)
                             .align(Alignment.CenterVertically)
                             .fillMaxSize()
-                        )
+                    )
                     Text(
-                        text="Two Box",
-                        modifier =Modifier
+                        text = "Two Box",
+                        modifier = Modifier
                             .width(250.dp)
                             .padding(16.dp)
                             .align(Alignment.CenterVertically)
                             .fillMaxSize()
                     )
                 }
+            }
+            Column() {
                 Row(){
                     Text(
                         text="Three Box",
                         modifier =Modifier
                             .width(250.dp)
-                            .padding(16.dp)
+                            .padding(top = 160.dp, start = 16.dp, end = 16.dp)
                             .align(Alignment.CenterVertically)
                             .fillMaxSize()
+
                     )
                     Text(
                         text="Four Box",
                         modifier =Modifier
                             .width(250.dp)
-                            .padding(16.dp)
+                            .padding(top = 160.dp, start = 16.dp, end = 16.dp)
                             .align(Alignment.CenterVertically)
                             .fillMaxSize()
                     )
