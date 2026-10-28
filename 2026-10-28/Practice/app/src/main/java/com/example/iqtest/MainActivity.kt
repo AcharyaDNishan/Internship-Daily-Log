@@ -54,7 +54,7 @@ fun Greeting(question: String, modifier: Modifier = Modifier) {
             onValueChange = {},
             modifier = Modifier.fillMaxWidth()
         )
-        
+
 
     }
 }
