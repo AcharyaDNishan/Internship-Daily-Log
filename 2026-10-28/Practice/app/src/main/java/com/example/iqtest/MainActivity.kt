@@ -65,7 +65,10 @@ fun Greeting(question: String, modifier: Modifier = Modifier) {
             modifier = Modifier
                 .padding(16.dp)
         )
-
-
+        Button(
+            onClick = {
+                Inten
+            },
+        )
     }
 }
