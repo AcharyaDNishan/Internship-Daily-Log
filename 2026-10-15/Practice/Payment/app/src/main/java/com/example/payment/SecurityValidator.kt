@@ -3,23 +3,50 @@ package com.example.payment
 object SecurityValidator {
 
     private val attemptMap = mutableMapOf<String, MutableList<Long>>()
-    private const val MAX_ATTEMPTS = 5
-    private const val WINDOW_MS = 60_000L // 1 minute window
+    private val failedLoginCountMap = mutableMapOf<String, Int>()
+    private val lockoutTimeMap = mutableMapOf<String, Long>()
 
-    // Client-side rate limiting to prevent spam / brute force
+    private const val MAX_ATTEMPTS = 5
+    private const val WINDOW_MS = 60_000L // 1 minute rate limit window
+    private const val LOCKOUT_DURATION_MS = 300_000L // 5 minutes account lockout
+
     fun isRateLimited(actionKey: String): Boolean {
         val currentTime = System.currentTimeMillis()
         val attempts = attemptMap.getOrPut(actionKey) { mutableListOf() }
-
-        // Remove attempts older than 1 minute
         attempts.removeAll { currentTime - it > WINDOW_MS }
 
         if (attempts.size >= MAX_ATTEMPTS) {
-            return true // Rate limited!
+            return true
         }
 
         attempts.add(currentTime)
         return false
+    }
+
+    fun isAccountLockedOut(phone: String): Boolean {
+        val lockTime = lockoutTimeMap[phone] ?: return false
+        val currentTime = System.currentTimeMillis()
+        if (currentTime - lockTime < LOCKOUT_DURATION_MS) {
+            return true // Account is temporarily locked
+        } else {
+            // Lockout expired
+            lockoutTimeMap.remove(phone)
+            failedLoginCountMap.remove(phone)
+            return false
+        }
+    }
+
+    fun recordFailedLogin(phone: String) {
+        val count = (failedLoginCountMap[phone] ?: 0) + 1
+        failedLoginCountMap[phone] = count
+        if (count >= 5) {
+            lockoutTimeMap[phone] = System.currentTimeMillis()
+        }
+    }
+
+    fun resetFailedLogin(phone: String) {
+        failedLoginCountMap.remove(phone)
+        lockoutTimeMap.remove(phone)
     }
 
     fun validatePhoneNumber(phone: String): String? {
@@ -30,7 +57,7 @@ object SecurityValidator {
         if (!sanitized.matches(Regex("^[0-9]{10}$"))) {
             return "Please enter a valid 10-digit phone number"
         }
-        return null // Valid
+        return null
     }
 
     fun validatePassword(password: String): String? {
@@ -40,7 +67,7 @@ object SecurityValidator {
         if (password.length < 6) {
             return "Password must be at least 6 characters"
         }
-        return null // Valid
+        return null
     }
 
     fun validateName(name: String, fieldName: String = "Name"): String? {
@@ -51,7 +78,7 @@ object SecurityValidator {
         if (sanitized.length < 2) {
             return "$fieldName must be at least 2 characters"
         }
-        return null // Valid
+        return null
     }
 
     fun sanitizeText(input: String): String {

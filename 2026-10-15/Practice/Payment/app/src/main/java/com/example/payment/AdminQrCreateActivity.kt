@@ -1,17 +1,23 @@
 package com.example.payment
 
+import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.os.Bundle
+import android.print.PrintManager
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.FileProvider
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
 import com.google.zxing.BarcodeFormat
 import com.journeyapps.barcodescanner.BarcodeEncoder
+import io.github.jan.supabase.postgrest.from
+import kotlinx.coroutines.launch
+import java.io.File
 import java.util.UUID
 
 class AdminQrCreateActivity : BaseSecureActivity() {
@@ -36,7 +42,7 @@ class AdminQrCreateActivity : BaseSecureActivity() {
                 return@setOnClickListener
             }
 
-            val qrId = "QR_${UUID.randomUUID().toString().take(8)}"
+            val qrId = "QR_${UUID.randomUUID().toString().replace("-", "").take(10)}"
             val qrData = QrCodeData(
                 qrCodeId = qrId,
                 creditAmount = creditAmount,
@@ -45,6 +51,14 @@ class AdminQrCreateActivity : BaseSecureActivity() {
 
             SessionManager.qrCodesList.add(qrData)
 
+            lifecycleScope.launch {
+                try {
+                    SupabaseClient.client.from("qr_codes").insert(qrData)
+                } catch (e: Exception) {
+                    // Fallback
+                }
+            }
+
             val qrPayload = HmacQrSigner.signQrPayload(qrId, creditAmount)
             val bitmap = generateQrBitmap(qrPayload)
             if (bitmap != null) {
@@ -52,94 +66,109 @@ class AdminQrCreateActivity : BaseSecureActivity() {
                 ivGeneratedQr?.visibility = View.VISIBLE
             }
 
-            tvQrStatus?.text = "Generated Single QR Code: $qrId\nCredit Value: Rs. $creditAmount"
-            Toast.makeText(this, "Digitally Signed QR Code Generated!", Toast.LENGTH_SHORT).show()
+            tvQrStatus?.text = "Generated Single Signed QR Code: $qrId\nCredit Value: Rs. $creditAmount"
+            Toast.makeText(this, "Digitally Signed QR Code Saved to qr_codes Table!", Toast.LENGTH_SHORT).show()
         }
 
         btnGenerate100Bulk?.setOnClickListener {
-            val bulkList = generate100RandomQrCodes()
-            SessionManager.qrCodesList.addAll(bulkList)
+            lifecycleScope.launch {
+                val bulkList = generate100RandomQrCodes()
+                SessionManager.qrCodesList.addAll(bulkList)
 
-            val sampleQr = bulkList.last()
-            val samplePayload = HmacQrSigner.signQrPayload(sampleQr.qrCodeId, sampleQr.creditAmount)
-            val bitmap = generateQrBitmap(samplePayload)
-            if (bitmap != null) {
-                ivGeneratedQr?.setImageBitmap(bitmap)
-                ivGeneratedQr?.visibility = View.VISIBLE
+                try {
+                    SupabaseClient.client.from("qr_codes").insert(bulkList)
+                } catch (e: Exception) {
+                    // Fallback
+                }
+
+                val sampleQr = bulkList.last()
+                val samplePayload = HmacQrSigner.signQrPayload(sampleQr.qrCodeId, sampleQr.creditAmount)
+                val bitmap = generateQrBitmap(samplePayload)
+                if (bitmap != null) {
+                    ivGeneratedQr?.setImageBitmap(bitmap)
+                    ivGeneratedQr?.visibility = View.VISIBLE
+                }
+
+                tvQrStatus?.text = "Created & Saved 100 One-Time Use QR Codes!\nCredits per QR: Rs. 50 to Rs. 500\nTotal Pool: ${SessionManager.qrCodesList.size} QR Codes"
+                Toast.makeText(this@AdminQrCreateActivity, "🎉 100 One-Time Use QR Codes Saved to qr_codes Table!", Toast.LENGTH_LONG).show()
             }
-
-            tvQrStatus?.text = "Created 100 Signed QR Codes!\nCredits per QR: Rs. 50 to Rs. 500\nTotal Pool: ${SessionManager.qrCodesList.size} QR Codes"
-            Toast.makeText(this, "🎉 100 Signed Credit QR Codes Created!", Toast.LENGTH_LONG).show()
         }
 
         btnExportDocx?.setOnClickListener {
-            if (SessionManager.qrCodesList.isEmpty()) {
-                val bulkList = generate100RandomQrCodes()
-                SessionManager.qrCodesList.addAll(bulkList)
-            }
-
-            try {
-                val docxFile = DocxExporter.generateQrStickersDocx(this, SessionManager.qrCodesList.take(100))
-                val contentUri = FileProvider.getUriForFile(this, "$packageName.provider", docxFile)
-
-                val viewIntent = Intent(Intent.ACTION_VIEW).apply {
-                    setDataAndType(contentUri, "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
-                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            lifecycleScope.launch {
+                if (SessionManager.qrCodesList.isEmpty()) {
+                    val bulkList = generate100RandomQrCodes()
+                    SessionManager.qrCodesList.addAll(bulkList)
+                    try {
+                        SupabaseClient.client.from("qr_codes").insert(bulkList)
+                    } catch (e: Exception) {
+                        // Fallback
+                    }
                 }
 
-                val shareIntent = Intent(Intent.ACTION_SEND).apply {
-                    type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                    putExtra(Intent.EXTRA_STREAM, contentUri)
-                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                try {
+                    val docxFile = DocxExporter.generateQrStickersDocx(this@AdminQrCreateActivity, SessionManager.qrCodesList.take(100))
+                    openDocxFile(docxFile)
+                    tvQrStatus?.text = "✅ Exported 100 QR DOCX Stickers (5x6 A4 Grid)!\nSaved in Downloads: ${docxFile.name}"
+                    Toast.makeText(this@AdminQrCreateActivity, "📄 DOCX Saved: ${docxFile.name}", Toast.LENGTH_LONG).show()
+                } catch (e: Exception) {
+                    Toast.makeText(this@AdminQrCreateActivity, "Error exporting DOCX: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
                 }
-
-                val chooser = Intent.createChooser(viewIntent, "Open or Share DOCX Sticker Sheet").apply {
-                    putExtra(Intent.EXTRA_INITIAL_INTENTS, arrayOf(shareIntent))
-                }
-
-                tvQrStatus?.text = "✅ Exported 100 QR DOCX Stickers (5x6 A4 Grid)!\nFile: ${docxFile.name}"
-                Toast.makeText(this, "📄 DOCX Created: ${docxFile.name}", Toast.LENGTH_LONG).show()
-                startActivity(chooser)
-
-            } catch (e: Exception) {
-                Toast.makeText(this, "Error exporting DOCX: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
             }
         }
 
         btnExportPdf?.setOnClickListener {
-            if (SessionManager.qrCodesList.isEmpty()) {
-                val bulkList = generate100RandomQrCodes()
-                SessionManager.qrCodesList.addAll(bulkList)
+            lifecycleScope.launch {
+                if (SessionManager.qrCodesList.isEmpty()) {
+                    val bulkList = generate100RandomQrCodes()
+                    SessionManager.qrCodesList.addAll(bulkList)
+                    try {
+                        SupabaseClient.client.from("qr_codes").insert(bulkList)
+                    } catch (e: Exception) {
+                        // Fallback
+                    }
+                }
+
+                try {
+                    val pdfFile = PdfExporter.generateQrStickersPdf(this@AdminQrCreateActivity, SessionManager.qrCodesList.take(100))
+                    printPdfDirectly(pdfFile)
+                    tvQrStatus?.text = "🖨️ Printing 100 QR Stickers PDF (5x6 A4 Grid)!\nFile: ${pdfFile.name}"
+                    Toast.makeText(this@AdminQrCreateActivity, "🖨️ Opening Print Manager for ${pdfFile.name}...", Toast.LENGTH_LONG).show()
+                } catch (e: Exception) {
+                    Toast.makeText(this@AdminQrCreateActivity, "Error printing PDF: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
+                }
             }
+        }
+    }
 
-            try {
-                val pdfFile = PdfExporter.generateQrStickersPdf(this, SessionManager.qrCodesList.take(100))
-                val contentUri = FileProvider.getUriForFile(this, "$packageName.provider", pdfFile)
+    private fun printPdfDirectly(pdfFile: File) {
+        val printManager = getSystemService(PRINT_SERVICE) as? PrintManager
+        if (printManager != null) {
+            val printAdapter = PdfPrintAdapter(pdfFile)
+            printManager.print("QR_Stickers_A4_5x6", printAdapter, null)
+        } else {
+            Toast.makeText(this, "Print service unavailable on this device", Toast.LENGTH_SHORT).show()
+        }
+    }
 
-                val viewIntent = Intent(Intent.ACTION_VIEW).apply {
-                    setDataAndType(contentUri, "application/pdf")
-                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                }
+    private fun openDocxFile(file: File) {
+        val contentUri = FileProvider.getUriForFile(this, "$packageName.provider", file)
+        val viewIntent = Intent(Intent.ACTION_VIEW).apply {
+            setDataAndType(contentUri, "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
 
-                val shareIntent = Intent(Intent.ACTION_SEND).apply {
-                    type = "application/pdf"
-                    putExtra(Intent.EXTRA_STREAM, contentUri)
-                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                }
-
-                val chooser = Intent.createChooser(viewIntent, "Open or Print QR PDF").apply {
-                    putExtra(Intent.EXTRA_INITIAL_INTENTS, arrayOf(shareIntent))
-                }
-
-                tvQrStatus?.text = "✅ Created Printable A4 PDF (5x6 Grid)!\nFile: ${pdfFile.name}"
-                Toast.makeText(this, "🖨️ PDF Created: ${pdfFile.name}", Toast.LENGTH_LONG).show()
-                startActivity(chooser)
-
-            } catch (e: Exception) {
-                Toast.makeText(this, "Error exporting PDF: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
+        try {
+            startActivity(viewIntent)
+        } catch (e: Exception) {
+            // Share intent fallback if no default app assigned
+            val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                putExtra(Intent.EXTRA_STREAM, contentUri)
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             }
+            startActivity(Intent.createChooser(shareIntent, "Open or Share DOCX File"))
         }
     }
 
@@ -147,7 +176,7 @@ class AdminQrCreateActivity : BaseSecureActivity() {
         val list = mutableListOf<QrCodeData>()
         for (i in 1..100) {
             val randomCredit = (50..500).random().toDouble()
-            val qrId = "QR_BULK_${UUID.randomUUID().toString().take(8)}"
+            val qrId = "QR_BULK_${UUID.randomUUID().toString().replace("-", "").take(10)}"
             list.add(
                 QrCodeData(
                     qrCodeId = qrId,

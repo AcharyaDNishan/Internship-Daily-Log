@@ -46,7 +46,20 @@ class LoginActivity : BaseSecureActivity() {
                 return@setOnClickListener
             }
 
-            // 2. Validate input fields
+            // 2. Account Lockout Protection Check
+            if (SecurityValidator.isAccountLockedOut(rawPhone)) {
+                tilPhoneNumber?.error = "Account locked for 5 minutes due to multiple failed login attempts."
+                Toast.makeText(this, "🔒 Account temporarily locked. Please wait 5 minutes.", Toast.LENGTH_LONG).show()
+                return@setOnClickListener
+            }
+
+            // 3. Rate Limit Check
+            if (SecurityValidator.isRateLimited("login")) {
+                Toast.makeText(this, "Too many login attempts. Please wait 1 minute.", Toast.LENGTH_LONG).show()
+                return@setOnClickListener
+            }
+
+            // 4. Validate input fields
             val phoneErr = SecurityValidator.validatePhoneNumber(rawPhone)
             val passErr = SecurityValidator.validatePassword(rawPassword)
 
@@ -59,12 +72,7 @@ class LoginActivity : BaseSecureActivity() {
                 return@setOnClickListener
             }
 
-            if (SecurityValidator.isRateLimited("login")) {
-                Toast.makeText(this, "Too many login attempts. Please wait 1 minute.", Toast.LENGTH_LONG).show()
-                return@setOnClickListener
-            }
-
-            // 3. Regular User Login - STRICT ACCOUNT EXISTENCE CHECK
+            // 5. Regular User Login - STRICT ACCOUNT EXISTENCE CHECK
             val hashedPassword = PasswordHasher.hashPassword(rawPassword)
             val existingUser = SessionManager.usersList.find { it.phone == rawPhone }
 
@@ -76,12 +84,14 @@ class LoginActivity : BaseSecureActivity() {
 
             // Verify password
             if (existingUser.password != hashedPassword && existingUser.password != rawPassword) {
+                SecurityValidator.recordFailedLogin(rawPhone)
                 tilPassword?.error = "Incorrect password"
                 Toast.makeText(this, "Incorrect password", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
             // Login successful
+            SecurityValidator.resetFailedLogin(rawPhone)
             SessionManager.currentUser = existingUser
             SessionManager.isAdmin = false
             Toast.makeText(this, "Login Successful!", Toast.LENGTH_SHORT).show()

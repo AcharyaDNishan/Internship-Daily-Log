@@ -66,7 +66,32 @@ class SignInActivity : BaseSecureActivity() {
                 return@setOnClickListener
             }
 
+            // Enforce UNIQUE Phone Number per user
+            if (SessionManager.usersList.any { it.phone == phone }) {
+                tilPhoneNumber?.error = "An account with this phone number already exists! Please Log In."
+                Toast.makeText(this, "❌ Phone number already registered! Please Log In.", Toast.LENGTH_LONG).show()
+                return@setOnClickListener
+            }
+
             lifecycleScope.launch {
+                // Double check Supabase DB for duplicate phone number
+                try {
+                    val existing = SupabaseClient.client.from("users")
+                        .select {
+                            filter {
+                                eq("phone", phone)
+                            }
+                        }.decodeList<User>()
+
+                    if (existing.isNotEmpty()) {
+                        tilPhoneNumber?.error = "Phone number already registered on database. Please Log In."
+                        Toast.makeText(this@SignInActivity, "❌ Phone number already registered!", Toast.LENGTH_LONG).show()
+                        return@launch
+                    }
+                } catch (e: Exception) {
+                    // Fallback to local check
+                }
+
                 val newUid = SessionManager.generateUnique9DigitUid()
                 val hashedPassword = PasswordHasher.hashPassword(password)
 
