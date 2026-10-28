@@ -1,9 +1,11 @@
 package com.example.iqtest
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -28,7 +30,12 @@ class Secondary : ComponentActivity() {
                 val r = painterResource(R.drawable.ic_task_completed)
                 Image(
                     painter = r,
-                    contentDescription = null
+                    contentDescription = null,
+                    modifier = Modifier
+                        .clickable(onClick = {
+                            val intent = Intent(context, Secondary::class.java)
+                            context.startActivity(intent)
+                        })
                 )
                 Text(
                     text="All Tasks Completed!",
