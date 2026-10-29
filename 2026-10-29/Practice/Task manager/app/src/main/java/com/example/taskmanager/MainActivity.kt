@@ -1,6 +1,5 @@
 package com.example.taskmanager
 
-import android.R.attr.onClick
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -45,7 +44,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.test.espresso.base.Default
 import com.example.taskmanager.ui.theme.TaskManagerTheme
-import kotlin.jvm.java
 
 class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3Api::class)
@@ -61,10 +59,6 @@ class MainActivity : ComponentActivity() {
                         colors = topAppBarColors(
                             containerColor = MaterialTheme.colorScheme.primaryContainer,
                             titleContentColor = Color.Red,
-                            modifier=Modifier.clickable({onClick = {
-                                val intent = Intent(this, ::class.java)
-                                startActivity(intent)
-                            }})
                         ),
                         title = {
                             Text("Top app bar")
@@ -85,7 +79,10 @@ class MainActivity : ComponentActivity() {
                     }
                 },
                 floatingActionButton = {
-                    FloatingActionButton(onClick = { presses++ }) {
+                    FloatingActionButton(onClick = {
+                        val intent = Intent(this@MainActivity, SecondActivity::class.java)
+                        startActivity(intent)
+                    }) {
                         Icon(Icons.Default.Add, contentDescription = "Add")
                     }
                 }
