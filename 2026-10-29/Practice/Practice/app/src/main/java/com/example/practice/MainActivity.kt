@@ -1,5 +1,6 @@
 package com.example.practice
 
+import android.graphics.Color
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -44,7 +45,7 @@ class MainActivity : ComponentActivity() {
                 )
                 Card(
                     colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                        containerColor = androidx.compose.ui.graphics.Color.Blue,
                     ),
                     modifier = Modifier
                         .size(width = 240.dp, height = 100.dp)
