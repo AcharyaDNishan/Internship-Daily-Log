@@ -4,5 +4,4 @@ Scaffold accepts several composables as parameters. Among these are the followin
 - topBar: The app bar across the top of the screen.
 - bottomBar: The app bar across the bottom of the screen.
 - floatingActionButton: A button that hovers over the bottom-right corner of the screen that you can use to expose key actions.
-We can also pass Scaffold content as you would to other containers. It passes PaddingValues to the content lambda that you should apply to your
-content's root composable to constrain its size. 
+We can also pass Scaffold content as you would to other containers. It passes PaddingValues to the content lambda that you should apply to your content's root composable to constrain its size.  
