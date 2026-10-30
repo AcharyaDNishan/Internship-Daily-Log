@@ -8,7 +8,7 @@
     <string name="task_title">Task Title</string>
     <string name="task_description">Task Description</string>
     <string name="add_task">Add Task</string>
-    <string name="send_notification">Send Notification</string>
+    <string name="send_notification">Send Immediate Notification</string>
     <string name="notify">Notify</string>
     <string name="no_pending_tasks">No pending tasks!</string>
     <string name="no_completed_tasks">No completed tasks yet!</string>
@@ -22,4 +22,12 @@
     <string name="all_priorities">All</string>
     <string name="task_progress">%1$d of %2$d tasks completed (%3$d%%)</string>
     <string name="undo">Undo</string>
+    <string name="due_date">Due Date &amp; Time</string>
+    <string name="select_due_date">Select Date</string>
+    <string name="select_due_time">Select Time</string>
+    <string name="no_due_date">No due date set</string>
+    <string name="clear">Clear</string>
+    <string name="schedule_notification">Schedule Notification at Due Time</string>
+    <string name="overdue">OVERDUE</string>
+    <string name="due_prefix">Due: %1$s</string>
 </resources>

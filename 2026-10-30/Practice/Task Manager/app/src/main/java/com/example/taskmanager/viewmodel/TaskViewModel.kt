@@ -1,6 +1,8 @@
 package com.example.taskmanager.viewmodel
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
+import com.example.taskmanager.data.TaskStorageManager
 import com.example.taskmanager.model.Priority
 import com.example.taskmanager.model.Task
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -9,30 +11,12 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
 data class TaskUiState(
-    val tasks: List<Task> = listOf(
-        Task(
-            title = "Complete Android Basics Codelab",
-            description = "Finish the Task Manager practice problem",
-            isCompleted = false,
-            priority = Priority.HIGH
-        ),
-        Task(
-            title = "Review Jetpack Compose Navigation",
-            description = "Learn NavHost, ViewModel, and Scaffold navigation",
-            isCompleted = false,
-            priority = Priority.MEDIUM
-        ),
-        Task(
-            title = "Set up Task Notifications",
-            description = "Test POST_NOTIFICATIONS runtime permission and channel",
-            isCompleted = true,
-            priority = Priority.LOW
-        )
-    ),
+    val tasks: List<Task> = emptyList(),
     val searchQuery: String = "",
     val selectedPriorityFilter: Priority? = null,
     val userMessage: String? = null,
-    val lastDeletedTask: Task? = null
+    val lastDeletedTask: Task? = null,
+    val isLoaded: Boolean = false
 ) {
     val incompleteTasks: List<Task>
         get() = filterTasks(isCompleted = false)
@@ -62,22 +46,38 @@ class TaskViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(TaskUiState())
     val uiState: StateFlow<TaskUiState> = _uiState.asStateFlow()
 
-    fun addTask(title: String, description: String, priority: Priority) {
+    fun loadSavedTasks(context: Context) {
+        if (!_uiState.value.isLoaded) {
+            val loadedTasks = TaskStorageManager.loadTasks(context)
+            _uiState.update { currentState ->
+                currentState.copy(
+                    tasks = loadedTasks,
+                    isLoaded = true
+                )
+            }
+        }
+    }
+
+    fun addTask(context: Context, title: String, description: String, priority: Priority, dueDate: Long? = null): Task {
         val newTask = Task(
             title = title,
             description = description,
             isCompleted = false,
-            priority = priority
+            priority = priority,
+            dueDate = dueDate
         )
         _uiState.update { currentState ->
+            val updatedList = listOf(newTask) + currentState.tasks
+            TaskStorageManager.saveTasks(context, updatedList)
             currentState.copy(
-                tasks = listOf(newTask) + currentState.tasks,
+                tasks = updatedList,
                 userMessage = "Task '$title' created!"
             )
         }
+        return newTask
     }
 
-    fun toggleTaskCompletion(taskId: String) {
+    fun toggleTaskCompletion(context: Context, taskId: String) {
         _uiState.update { currentState ->
             var updatedMessage: String? = null
             val updatedTasks = currentState.tasks.map { task ->
@@ -89,14 +89,16 @@ class TaskViewModel : ViewModel() {
                     task
                 }
             }
+            TaskStorageManager.saveTasks(context, updatedTasks)
             currentState.copy(tasks = updatedTasks, userMessage = updatedMessage)
         }
     }
 
-    fun deleteTask(taskId: String) {
+    fun deleteTask(context: Context, taskId: String) {
         _uiState.update { currentState ->
             val deletedTask = currentState.tasks.find { it.id == taskId }
             val updatedTasks = currentState.tasks.filterNot { it.id == taskId }
+            TaskStorageManager.saveTasks(context, updatedTasks)
             currentState.copy(
                 tasks = updatedTasks,
                 lastDeletedTask = deletedTask,
@@ -105,12 +107,14 @@ class TaskViewModel : ViewModel() {
         }
     }
 
-    fun undoDelete() {
+    fun undoDelete(context: Context) {
         _uiState.update { currentState ->
             val restoredTask = currentState.lastDeletedTask
             if (restoredTask != null) {
+                val updatedTasks = listOf(restoredTask) + currentState.tasks
+                TaskStorageManager.saveTasks(context, updatedTasks)
                 currentState.copy(
-                    tasks = listOf(restoredTask) + currentState.tasks,
+                    tasks = updatedTasks,
                     lastDeletedTask = null,
                     userMessage = "Restored '${restoredTask.title}'"
                 )

@@ -1,6 +1,8 @@
 package com.example.taskmanager
 
 import android.Manifest
+import android.app.DatePickerDialog
+import android.app.TimePickerDialog
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -33,6 +35,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Search
@@ -51,6 +54,7 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -89,8 +93,13 @@ import androidx.navigation.compose.rememberNavController
 import com.example.taskmanager.model.Priority
 import com.example.taskmanager.model.Task
 import com.example.taskmanager.ui.theme.TaskManagerTheme
+import com.example.taskmanager.util.AlarmScheduler
 import com.example.taskmanager.util.NotificationHelper
 import com.example.taskmanager.viewmodel.TaskViewModel
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 
 sealed class Screen(val route: String, val title: String, val icon: ImageVector) {
     object Incomplete : Screen("incomplete", "Pending Tasks", Icons.AutoMirrored.Filled.List)
@@ -126,9 +135,10 @@ fun TaskManagerApp(taskViewModel: TaskViewModel = viewModel()) {
     val uiState by taskViewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
 
-    // Initialize Notification Channel
+    // Initialize Notification Channel and Load Saved Tasks from File
     LaunchedEffect(Unit) {
         NotificationHelper.createNotificationChannel(context)
+        taskViewModel.loadSavedTasks(context)
     }
 
     // Snackbar messaging & Undo handler
@@ -139,7 +149,7 @@ fun TaskManagerApp(taskViewModel: TaskViewModel = viewModel()) {
                 actionLabel = if (uiState.lastDeletedTask != null) "Undo" else null
             )
             if (result == SnackbarResult.ActionPerformed) {
-                taskViewModel.undoDelete()
+                taskViewModel.undoDelete(context)
             }
             taskViewModel.userMessageShown()
         }
@@ -246,8 +256,11 @@ fun TaskManagerApp(taskViewModel: TaskViewModel = viewModel()) {
                     selectedPriority = uiState.selectedPriorityFilter,
                     onSearchChange = { taskViewModel.setSearchQuery(it) },
                     onPriorityFilterChange = { taskViewModel.setPriorityFilter(it) },
-                    onToggleTask = { taskViewModel.toggleTaskCompletion(it.id) },
-                    onDeleteTask = { taskViewModel.deleteTask(it.id) },
+                    onToggleTask = { taskViewModel.toggleTaskCompletion(context, it.id) },
+                    onDeleteTask = { task ->
+                        AlarmScheduler.cancelTaskAlarm(context, task)
+                        taskViewModel.deleteTask(context, task.id)
+                    },
                     onNotifyTask = { task ->
                         requestNotificationPermissionIfNeeded()
                         NotificationHelper.showTaskNotification(
@@ -266,16 +279,26 @@ fun TaskManagerApp(taskViewModel: TaskViewModel = viewModel()) {
                     selectedPriority = uiState.selectedPriorityFilter,
                     onSearchChange = { taskViewModel.setSearchQuery(it) },
                     onPriorityFilterChange = { taskViewModel.setPriorityFilter(it) },
-                    onToggleTask = { taskViewModel.toggleTaskCompletion(it.id) },
-                    onDeleteTask = { taskViewModel.deleteTask(it.id) }
+                    onToggleTask = { taskViewModel.toggleTaskCompletion(context, it.id) },
+                    onDeleteTask = { task ->
+                        AlarmScheduler.cancelTaskAlarm(context, task)
+                        taskViewModel.deleteTask(context, task.id)
+                    }
                 )
             }
             composable(Screen.CreateTask.route) {
                 CreateTaskScreen(
                     onRequestPermission = { requestNotificationPermissionIfNeeded() },
-                    onAddTask = { title, description, priority, sendNotification ->
-                        taskViewModel.addTask(title, description, priority)
-                        if (sendNotification) {
+                    onAddTask = { title, description, priority, dueDate, scheduleAlarm, sendImmediateNotification ->
+                        val createdTask = taskViewModel.addTask(context, title, description, priority, dueDate)
+
+                        if (scheduleAlarm && dueDate != null) {
+                            requestNotificationPermissionIfNeeded()
+                            AlarmScheduler.scheduleTaskAlarm(context, createdTask)
+                            Toast.makeText(context, "Alarm scheduled for task due time", Toast.LENGTH_SHORT).show()
+                        }
+
+                        if (sendImmediateNotification) {
                             requestNotificationPermissionIfNeeded()
                             NotificationHelper.showTaskNotification(
                                 context = context,
@@ -284,6 +307,7 @@ fun TaskManagerApp(taskViewModel: TaskViewModel = viewModel()) {
                                 priority = priority
                             )
                         }
+
                         navController.navigate(Screen.Incomplete.route) {
                             popUpTo(navController.graph.findStartDestination().id) {
                                 saveState = true
@@ -544,10 +568,41 @@ fun TaskItemCard(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
+                if (task.formattedDueDate != null) {
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.DateRange,
+                            contentDescription = null,
+                            tint = if (task.isOverdue) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.height(16.dp)
+                        )
+                        Text(
+                            text = stringResource(R.string.due_prefix, task.formattedDueDate!!),
+                            fontSize = 12.sp,
+                            fontWeight = if (task.isOverdue) FontWeight.Bold else FontWeight.Medium,
+                            color = if (task.isOverdue) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
+                        )
+                        if (task.isOverdue) {
+                            Spacer(modifier = Modifier.width(4.dp))
+                            AssistChip(
+                                onClick = { },
+                                label = { Text(stringResource(R.string.overdue), fontSize = 10.sp, fontWeight = FontWeight.Bold) },
+                                colors = AssistChipDefaults.assistChipColors(
+                                    containerColor = MaterialTheme.colorScheme.errorContainer,
+                                    labelColor = MaterialTheme.colorScheme.onErrorContainer
+                                )
+                            )
+                        }
+                    }
+                }
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = task.formattedDate,
-                    fontSize = 12.sp,
+                    text = "Created: ${task.formattedDate}",
+                    fontSize = 11.sp,
                     color = MaterialTheme.colorScheme.outline
                 )
             }
@@ -592,13 +647,55 @@ fun PriorityChip(priority: Priority) {
 @Composable
 fun CreateTaskScreen(
     onRequestPermission: () -> Unit,
-    onAddTask: (title: String, description: String, priority: Priority, sendNotification: Boolean) -> Unit
+    onAddTask: (title: String, description: String, priority: Priority, dueDate: Long?, scheduleAlarm: Boolean, sendImmediateNotification: Boolean) -> Unit
 ) {
+    val context = LocalContext.current
     var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var selectedPriority by remember { mutableStateOf(Priority.MEDIUM) }
-    var sendNotification by remember { mutableStateOf(true) }
+    var sendImmediateNotification by remember { mutableStateOf(false) }
+    var scheduleAlarm by remember { mutableStateOf(true) }
     var titleError by remember { mutableStateOf(false) }
+
+    var selectedCalendar by remember { mutableStateOf<Calendar?>(null) }
+
+    fun openDatePicker() {
+        val calendar = selectedCalendar ?: Calendar.getInstance()
+        DatePickerDialog(
+            context,
+            { _, year, month, dayOfMonth ->
+                val newCal = Calendar.getInstance()
+                newCal.set(Calendar.YEAR, year)
+                newCal.set(Calendar.MONTH, month)
+                newCal.set(Calendar.DAY_OF_MONTH, dayOfMonth)
+                selectedCalendar?.let {
+                    newCal.set(Calendar.HOUR_OF_DAY, it.get(Calendar.HOUR_OF_DAY))
+                    newCal.set(Calendar.MINUTE, it.get(Calendar.MINUTE))
+                }
+                selectedCalendar = newCal
+            },
+            calendar.get(Calendar.YEAR),
+            calendar.get(Calendar.MONTH),
+            calendar.get(Calendar.DAY_OF_MONTH)
+        ).show()
+    }
+
+    fun openTimePicker() {
+        val calendar = selectedCalendar ?: Calendar.getInstance()
+        TimePickerDialog(
+            context,
+            { _, hourOfDay, minute ->
+                val newCal = selectedCalendar ?: Calendar.getInstance()
+                newCal.set(Calendar.HOUR_OF_DAY, hourOfDay)
+                newCal.set(Calendar.MINUTE, minute)
+                newCal.set(Calendar.SECOND, 0)
+                selectedCalendar = newCal
+            },
+            calendar.get(Calendar.HOUR_OF_DAY),
+            calendar.get(Calendar.MINUTE),
+            false
+        ).show()
+    }
 
     Column(
         modifier = Modifier
@@ -646,11 +743,11 @@ fun CreateTaskScreen(
             label = { Text(stringResource(R.string.task_description)) },
             modifier = Modifier
                 .fillMaxWidth()
-                .height(110.dp),
-            maxLines = 4
+                .height(100.dp),
+            maxLines = 3
         )
 
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         Text(
             text = stringResource(R.string.priority),
@@ -673,7 +770,73 @@ fun CreateTaskScreen(
             }
         }
 
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(
+            text = stringResource(R.string.due_date),
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Medium,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            OutlinedButton(
+                onClick = { openDatePicker() },
+                modifier = Modifier.weight(1f)
+            ) {
+                Icon(Icons.Default.DateRange, contentDescription = null)
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    selectedCalendar?.let {
+                        SimpleDateFormat("MMM d, yyyy", Locale.getDefault()).format(Date(it.timeInMillis))
+                    } ?: stringResource(R.string.select_due_date)
+                )
+            }
+
+            OutlinedButton(
+                onClick = { openTimePicker() },
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    selectedCalendar?.let {
+                        SimpleDateFormat("h:mm a", Locale.getDefault()).format(Date(it.timeInMillis))
+                    } ?: stringResource(R.string.select_due_time)
+                )
+            }
+
+            if (selectedCalendar != null) {
+                IconButton(onClick = { selectedCalendar = null }) {
+                    Icon(Icons.Default.Clear, contentDescription = "Clear Due Date")
+                }
+            }
+        }
+
+        if (selectedCalendar != null) {
+            Spacer(modifier = Modifier.height(12.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = stringResource(R.string.schedule_notification),
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Switch(
+                    checked = scheduleAlarm,
+                    onCheckedChange = {
+                        scheduleAlarm = it
+                        if (it) onRequestPermission()
+                    }
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
 
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -682,27 +845,32 @@ fun CreateTaskScreen(
         ) {
             Text(
                 text = stringResource(R.string.send_notification),
-                style = MaterialTheme.typography.bodyLarge
+                style = MaterialTheme.typography.bodyMedium
             )
             Switch(
-                checked = sendNotification,
+                checked = sendImmediateNotification,
                 onCheckedChange = {
-                    sendNotification = it
-                    if (it) {
-                        onRequestPermission()
-                    }
+                    sendImmediateNotification = it
+                    if (it) onRequestPermission()
                 }
             )
         }
 
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
         Button(
             onClick = {
                 if (title.isBlank()) {
                     titleError = true
                 } else {
-                    onAddTask(title.trim(), description.trim(), selectedPriority, sendNotification)
+                    onAddTask(
+                        title.trim(),
+                        description.trim(),
+                        selectedPriority,
+                        selectedCalendar?.timeInMillis,
+                        scheduleAlarm,
+                        sendImmediateNotification
+                    )
                 }
             },
             modifier = Modifier

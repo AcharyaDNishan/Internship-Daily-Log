@@ -17,11 +17,23 @@ data class Task(
     val description: String = "",
     val isCompleted: Boolean = false,
     val priority: Priority = Priority.MEDIUM,
-    val createdAt: Long = System.currentTimeMillis()
+    val createdAt: Long = System.currentTimeMillis(),
+    val dueDate: Long? = null
 ) {
     val formattedDate: String
         get() {
             val formatter = SimpleDateFormat("MMM d, yyyy · h:mm a", Locale.getDefault())
             return formatter.format(Date(createdAt))
         }
+
+    val formattedDueDate: String?
+        get() {
+            return dueDate?.let {
+                val formatter = SimpleDateFormat("MMM d, yyyy · h:mm a", Locale.getDefault())
+                formatter.format(Date(it))
+            }
+        }
+
+    val isOverdue: Boolean
+        get() = dueDate != null && !isCompleted && dueDate < System.currentTimeMillis()
 }
