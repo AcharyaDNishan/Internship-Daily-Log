@@ -14,4 +14,12 @@
     <string name="no_completed_tasks">No completed tasks yet!</string>
     <string name="mark_completed">Mark Completed</string>
     <string name="mark_incomplete">Mark Pending</string>
+    <string name="priority">Priority</string>
+    <string name="priority_high">High</string>
+    <string name="priority_medium">Medium</string>
+    <string name="priority_low">Low</string>
+    <string name="search_tasks">Search tasks…</string>
+    <string name="all_priorities">All</string>
+    <string name="task_progress">%1$d of %2$d tasks completed (%3$d%%)</string>
+    <string name="undo">Undo</string>
 </resources>

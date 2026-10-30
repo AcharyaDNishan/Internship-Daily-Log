@@ -11,6 +11,8 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -22,6 +24,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -29,21 +32,30 @@ import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.AssistChip
+import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -51,8 +63,8 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -68,15 +80,17 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
-import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.taskmanager.model.Priority
 import com.example.taskmanager.model.Task
 import com.example.taskmanager.ui.theme.TaskManagerTheme
 import com.example.taskmanager.util.NotificationHelper
+import com.example.taskmanager.viewmodel.TaskViewModel
 
 sealed class Screen(val route: String, val title: String, val icon: ImageVector) {
     object Incomplete : Screen("incomplete", "Pending Tasks", Icons.AutoMirrored.Filled.List)
@@ -103,38 +117,35 @@ class MainActivity : ComponentActivity() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TaskManagerApp() {
+fun TaskManagerApp(taskViewModel: TaskViewModel = viewModel()) {
     val context = LocalContext.current
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route ?: Screen.Incomplete.route
 
-    val tasks = remember {
-        mutableStateListOf(
-            Task(
-                title = "Complete Android Basics Codelab",
-                description = "Finish the Task Manager practice problem",
-                isCompleted = false
-            ),
-            Task(
-                title = "Review Jetpack Compose Navigation",
-                description = "Learn NavHost and Scaffold navigation",
-                isCompleted = false
-            ),
-            Task(
-                title = "Set up Notifications",
-                description = "Test POST_NOTIFICATIONS runtime permission",
-                isCompleted = true
-            )
-        )
-    }
+    val uiState by taskViewModel.uiState.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
 
     // Initialize Notification Channel
     LaunchedEffect(Unit) {
         NotificationHelper.createNotificationChannel(context)
     }
 
-    // Runtime Notification Permission launcher for Android 13+
+    // Snackbar messaging & Undo handler
+    LaunchedEffect(uiState.userMessage) {
+        uiState.userMessage?.let { message ->
+            val result = snackbarHostState.showSnackbar(
+                message = message,
+                actionLabel = if (uiState.lastDeletedTask != null) "Undo" else null
+            )
+            if (result == SnackbarResult.ActionPerformed) {
+                taskViewModel.undoDelete()
+            }
+            taskViewModel.userMessageShown()
+        }
+    }
+
+    // Runtime Notification Permission launcher
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { isGranted ->
@@ -158,6 +169,7 @@ fun TaskManagerApp() {
     }
 
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = {
@@ -226,52 +238,50 @@ fun TaskManagerApp() {
         ) {
             composable(Screen.Incomplete.route) {
                 IncompleteTasksScreen(
-                    tasks = tasks.filter { !it.isCompleted },
-                    onToggleTask = { task ->
-                        val index = tasks.indexOfFirst { it.id == task.id }
-                        if (index != -1) {
-                            tasks[index] = tasks[index].copy(isCompleted = !tasks[index].isCompleted)
-                        }
-                    },
-                    onDeleteTask = { task ->
-                        tasks.removeAll { it.id == task.id }
-                    },
+                    tasks = uiState.incompleteTasks,
+                    totalCount = uiState.totalCount,
+                    completedCount = uiState.completedCount,
+                    progressPercentage = uiState.progressPercentage,
+                    searchQuery = uiState.searchQuery,
+                    selectedPriority = uiState.selectedPriorityFilter,
+                    onSearchChange = { taskViewModel.setSearchQuery(it) },
+                    onPriorityFilterChange = { taskViewModel.setPriorityFilter(it) },
+                    onToggleTask = { taskViewModel.toggleTaskCompletion(it.id) },
+                    onDeleteTask = { taskViewModel.deleteTask(it.id) },
                     onNotifyTask = { task ->
                         requestNotificationPermissionIfNeeded()
                         NotificationHelper.showTaskNotification(
                             context = context,
                             title = task.title,
-                            description = task.description
+                            description = task.description,
+                            priority = task.priority
                         )
                     }
                 )
             }
             composable(Screen.Completed.route) {
                 CompletedTasksScreen(
-                    tasks = tasks.filter { it.isCompleted },
-                    onToggleTask = { task ->
-                        val index = tasks.indexOfFirst { it.id == task.id }
-                        if (index != -1) {
-                            tasks[index] = tasks[index].copy(isCompleted = !tasks[index].isCompleted)
-                        }
-                    },
-                    onDeleteTask = { task ->
-                        tasks.removeAll { it.id == task.id }
-                    }
+                    tasks = uiState.completedTasks,
+                    searchQuery = uiState.searchQuery,
+                    selectedPriority = uiState.selectedPriorityFilter,
+                    onSearchChange = { taskViewModel.setSearchQuery(it) },
+                    onPriorityFilterChange = { taskViewModel.setPriorityFilter(it) },
+                    onToggleTask = { taskViewModel.toggleTaskCompletion(it.id) },
+                    onDeleteTask = { taskViewModel.deleteTask(it.id) }
                 )
             }
             composable(Screen.CreateTask.route) {
                 CreateTaskScreen(
                     onRequestPermission = { requestNotificationPermissionIfNeeded() },
-                    onAddTask = { title, description, sendNotification ->
-                        val newTask = Task(title = title, description = description, isCompleted = false)
-                        tasks.add(newTask)
+                    onAddTask = { title, description, priority, sendNotification ->
+                        taskViewModel.addTask(title, description, priority)
                         if (sendNotification) {
                             requestNotificationPermissionIfNeeded()
                             NotificationHelper.showTaskNotification(
                                 context = context,
-                                title = "New Task Created: $title",
-                                description = description
+                                title = "New Task: $title",
+                                description = description,
+                                priority = priority
                             )
                         }
                         navController.navigate(Screen.Incomplete.route) {
@@ -288,28 +298,150 @@ fun TaskManagerApp() {
 }
 
 @Composable
+fun TaskProgressCard(
+    totalCount: Int,
+    completedCount: Int,
+    progressPercentage: Int
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Overall Progress",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = "$completedCount of $totalCount ($progressPercentage%)",
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            LinearProgressIndicator(
+                progress = { if (totalCount == 0) 0f else completedCount.toFloat() / totalCount.toFloat() },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(8.dp),
+                color = MaterialTheme.colorScheme.primary,
+                trackColor = MaterialTheme.colorScheme.outlineVariant
+            )
+        }
+    }
+}
+
+@Composable
+fun SearchAndFilterHeader(
+    searchQuery: String,
+    selectedPriority: Priority?,
+    onSearchChange: (String) -> Unit,
+    onPriorityFilterChange: (Priority?) -> Unit
+) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        OutlinedTextField(
+            value = searchQuery,
+            onValueChange = onSearchChange,
+            placeholder = { Text(stringResource(R.string.search_tasks)) },
+            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+            trailingIcon = {
+                if (searchQuery.isNotEmpty()) {
+                    IconButton(onClick = { onSearchChange("") }) {
+                        Icon(Icons.Default.Clear, contentDescription = "Clear search")
+                    }
+                }
+            },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true
+        )
+
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            item {
+                FilterChip(
+                    selected = selectedPriority == null,
+                    onClick = { onPriorityFilterChange(null) },
+                    label = { Text(stringResource(R.string.all_priorities)) }
+                )
+            }
+            items(Priority.entries.toTypedArray()) { priority ->
+                FilterChip(
+                    selected = selectedPriority == priority,
+                    onClick = {
+                        onPriorityFilterChange(if (selectedPriority == priority) null else priority)
+                    },
+                    label = { Text(priority.label) }
+                )
+            }
+        }
+    }
+}
+
+@Composable
 fun IncompleteTasksScreen(
     tasks: List<Task>,
+    totalCount: Int,
+    completedCount: Int,
+    progressPercentage: Int,
+    searchQuery: String,
+    selectedPriority: Priority?,
+    onSearchChange: (String) -> Unit,
+    onPriorityFilterChange: (Priority?) -> Unit,
     onToggleTask: (Task) -> Unit,
     onDeleteTask: (Task) -> Unit,
     onNotifyTask: (Task) -> Unit
 ) {
-    if (tasks.isEmpty()) {
-        TaskCompletedEmptyState()
-    } else {
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            items(tasks, key = { it.id }) { task ->
-                TaskItemCard(
-                    task = task,
-                    onToggle = { onToggleTask(task) },
-                    onDelete = { onDeleteTask(task) },
-                    onNotify = { onNotifyTask(task) }
-                )
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        TaskProgressCard(
+            totalCount = totalCount,
+            completedCount = completedCount,
+            progressPercentage = progressPercentage
+        )
+
+        SearchAndFilterHeader(
+            searchQuery = searchQuery,
+            selectedPriority = selectedPriority,
+            onSearchChange = onSearchChange,
+            onPriorityFilterChange = onPriorityFilterChange
+        )
+
+        if (tasks.isEmpty()) {
+            TaskCompletedEmptyState()
+        } else {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                items(tasks, key = { it.id }) { task ->
+                    TaskItemCard(
+                        task = task,
+                        onToggle = { onToggleTask(task) },
+                        onDelete = { onDeleteTask(task) },
+                        onNotify = { onNotifyTask(task) }
+                    )
+                }
             }
         }
     }
@@ -318,35 +450,51 @@ fun IncompleteTasksScreen(
 @Composable
 fun CompletedTasksScreen(
     tasks: List<Task>,
+    searchQuery: String,
+    selectedPriority: Priority?,
+    onSearchChange: (String) -> Unit,
+    onPriorityFilterChange: (Priority?) -> Unit,
     onToggleTask: (Task) -> Unit,
     onDeleteTask: (Task) -> Unit
 ) {
-    if (tasks.isEmpty()) {
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                text = stringResource(R.string.no_completed_tasks),
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-    } else {
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            items(tasks, key = { it.id }) { task ->
-                TaskItemCard(
-                    task = task,
-                    onToggle = { onToggleTask(task) },
-                    onDelete = { onDeleteTask(task) },
-                    onNotify = null
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        SearchAndFilterHeader(
+            searchQuery = searchQuery,
+            selectedPriority = selectedPriority,
+            onSearchChange = onSearchChange,
+            onPriorityFilterChange = onPriorityFilterChange
+        )
+
+        if (tasks.isEmpty()) {
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = stringResource(R.string.no_completed_tasks),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+            }
+        } else {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                items(tasks, key = { it.id }) { task ->
+                    TaskItemCard(
+                        task = task,
+                        onToggle = { onToggleTask(task) },
+                        onDelete = { onDeleteTask(task) },
+                        onNotify = null
+                    )
+                }
             }
         }
     }
@@ -375,12 +523,19 @@ fun TaskItemCard(
             )
             Spacer(modifier = Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = task.title,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp,
-                    textDecoration = if (task.isCompleted) TextDecoration.LineThrough else TextDecoration.None
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        text = task.title,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp,
+                        textDecoration = if (task.isCompleted) TextDecoration.LineThrough else TextDecoration.None,
+                        modifier = Modifier.weight(1f, fill = false)
+                    )
+                    PriorityChip(priority = task.priority)
+                }
                 if (task.description.isNotEmpty()) {
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
@@ -389,6 +544,12 @@ fun TaskItemCard(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = task.formattedDate,
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.outline
+                )
             }
             if (onNotify != null) {
                 IconButton(onClick = onNotify) {
@@ -411,12 +572,31 @@ fun TaskItemCard(
 }
 
 @Composable
+fun PriorityChip(priority: Priority) {
+    val (containerColor, contentColor) = when (priority) {
+        Priority.HIGH -> MaterialTheme.colorScheme.errorContainer to MaterialTheme.colorScheme.onErrorContainer
+        Priority.MEDIUM -> MaterialTheme.colorScheme.tertiaryContainer to MaterialTheme.colorScheme.onTertiaryContainer
+        Priority.LOW -> MaterialTheme.colorScheme.secondaryContainer to MaterialTheme.colorScheme.onSecondaryContainer
+    }
+
+    AssistChip(
+        onClick = { },
+        label = { Text(priority.label, fontSize = 11.sp, fontWeight = FontWeight.Bold) },
+        colors = AssistChipDefaults.assistChipColors(
+            containerColor = containerColor,
+            labelColor = contentColor
+        )
+    )
+}
+
+@Composable
 fun CreateTaskScreen(
     onRequestPermission: () -> Unit,
-    onAddTask: (title: String, description: String, sendNotification: Boolean) -> Unit
+    onAddTask: (title: String, description: String, priority: Priority, sendNotification: Boolean) -> Unit
 ) {
     var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
+    var selectedPriority by remember { mutableStateOf(Priority.MEDIUM) }
     var sendNotification by remember { mutableStateOf(true) }
     var titleError by remember { mutableStateOf(false) }
 
@@ -445,7 +625,11 @@ fun CreateTaskScreen(
             modifier = Modifier.fillMaxWidth(),
             singleLine = true
         )
-        AnimatedVisibility(visible = titleError) {
+        AnimatedVisibility(
+            visible = titleError,
+            enter = fadeIn(),
+            exit = fadeOut()
+        ) {
             Text(
                 text = "Title cannot be empty",
                 color = MaterialTheme.colorScheme.error,
@@ -462,9 +646,32 @@ fun CreateTaskScreen(
             label = { Text(stringResource(R.string.task_description)) },
             modifier = Modifier
                 .fillMaxWidth()
-                .height(120.dp),
+                .height(110.dp),
             maxLines = 4
         )
+
+        Spacer(modifier = Modifier.height(20.dp))
+
+        Text(
+            text = stringResource(R.string.priority),
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Medium,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Priority.entries.forEach { priority ->
+                FilterChip(
+                    selected = selectedPriority == priority,
+                    onClick = { selectedPriority = priority },
+                    label = { Text(priority.label) },
+                    modifier = Modifier.weight(1f)
+                )
+            }
+        }
 
         Spacer(modifier = Modifier.height(20.dp))
 
@@ -495,7 +702,7 @@ fun CreateTaskScreen(
                 if (title.isBlank()) {
                     titleError = true
                 } else {
-                    onAddTask(title.trim(), description.trim(), sendNotification)
+                    onAddTask(title.trim(), description.trim(), selectedPriority, sendNotification)
                 }
             },
             modifier = Modifier
@@ -512,7 +719,9 @@ fun CreateTaskScreen(
 @Composable
 fun TaskCompletedEmptyState() {
     Column(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(vertical = 32.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
