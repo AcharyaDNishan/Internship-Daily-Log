@@ -1,0 +1,7 @@
+Scaffold, in simple terms, is a structure that provides a foundation for building a user interface. It typically includes common screen elements like an app bar (top bar), a body (the main content area), and optionally, a bottom navigation bar or a drawer. Think of it as a pre-designed template that takes care of basic screen organization, letting you focus on the specific content and functionality of your app.
+A scaffold is a fundamental structure that provides a standardized platform for complex user interfaces. It holds together different parts of the UI, such as app bars and floating action buttons, giving apps a coherent look and feel.
+Scaffold accepts several composables as parameters. Among these are the following:
+- topBar: The app bar across the top of the screen.
+- bottomBar: The app bar across the bottom of the screen.
+- floatingActionButton: A button that hovers over the bottom-right corner of the screen that you can use to expose key actions.
+We can also pass Scaffold content as you would to other containers. It passes PaddingValues to the content lambda that you should apply to your content's root composable to constrain its size.  
