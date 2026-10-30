@@ -1,3 +1,17 @@
 <resources>
     <string name="app_name">Task Manager</string>
+    <string name="all_tasks_completed">All tasks completed</string>
+    <string name="nice_work">Nice work!</string>
+    <string name="incomplete_tasks">Pending Tasks</string>
+    <string name="completed_tasks">Completed Tasks</string>
+    <string name="create_task">Create Task</string>
+    <string name="task_title">Task Title</string>
+    <string name="task_description">Task Description</string>
+    <string name="add_task">Add Task</string>
+    <string name="send_notification">Send Notification</string>
+    <string name="notify">Notify</string>
+    <string name="no_pending_tasks">No pending tasks!</string>
+    <string name="no_completed_tasks">No completed tasks yet!</string>
+    <string name="mark_completed">Mark Completed</string>
+    <string name="mark_incomplete">Mark Pending</string>
 </resources>
