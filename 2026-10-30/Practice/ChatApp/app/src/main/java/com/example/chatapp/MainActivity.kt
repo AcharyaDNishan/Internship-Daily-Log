@@ -1,6 +1,7 @@
 
 package com.example.chatapp
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -15,19 +16,17 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         setContent {
-
             var nickname by rememberSaveable {
                 mutableStateOf("")
             }
-
             var loggedIn by rememberSaveable {
                 mutableStateOf(false)
             }
-
             if (loggedIn) {
-                ChatScreen(nickname)
+                val intent= Intent(this, Login::class.java)
+                intent.putExtra("nickname",nickname)
+                startActivity(intent)
             } else {
                 LoginScreen(
                     nickname = nickname,
@@ -69,17 +68,5 @@ fun LoginScreen(
         ) {
             Text("Continue")
         }
-    }
-}
-
-@Composable
-fun ChatScreen(nickname: String) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    ) {
-        Text("Welcome, $nickname")
-        Text("Chat Screen")
     }
 }
