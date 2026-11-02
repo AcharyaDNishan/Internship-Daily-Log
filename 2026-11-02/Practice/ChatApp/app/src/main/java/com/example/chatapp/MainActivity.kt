@@ -1,5 +1,6 @@
 package com.example.chatapp
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -14,11 +15,14 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 class MainActivity : ComponentActivity() {
+
+    private var currentUserProfile: User? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,9 +32,20 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    ChatAppMain()
+                    ChatAppMain(
+                        onUserChanged = { user ->
+                            currentUserProfile = user
+                        }
+                    )
                 }
             }
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        currentUserProfile?.let { user ->
+            FirebaseManager.deleteUserDataByUid(user.uid)
         }
     }
 }
@@ -45,9 +60,16 @@ sealed class Screen {
 fun ChatAppMain(onUserChanged: (User?) -> Unit = {}) {
     var currentScreen by remember { mutableStateOf<Screen>(Screen.UserRegistration) }
     var currentUser by remember { mutableStateOf<User?>(null) }
+    val context = LocalContext.current
 
     LaunchedEffect(currentUser) {
         onUserChanged(currentUser)
+        currentUser?.let { user ->
+            val serviceIntent = Intent(context, CleanupService::class.java).apply {
+                putExtra("user_uid", user.uid)
+            }
+            context.startService(serviceIntent)
+        }
     }
 
     when (val screen = currentScreen) {
