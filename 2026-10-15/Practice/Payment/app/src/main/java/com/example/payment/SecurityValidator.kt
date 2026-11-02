@@ -10,6 +10,12 @@ object SecurityValidator {
     private const val WINDOW_MS = 60_000L // 1 minute rate limit window
     private const val LOCKOUT_DURATION_MS = 300_000L // 5 minutes account lockout
 
+    // Normalize phone number to last 10 digits for flawless matching across formats (+91, spaces, hyphens)
+    fun normalizePhone(phone: String): String {
+        val digits = phone.replace(Regex("[^0-9]"), "")
+        return if (digits.length >= 10) digits.takeLast(10) else digits
+    }
+
     fun isRateLimited(actionKey: String): Boolean {
         val currentTime = System.currentTimeMillis()
         val attempts = attemptMap.getOrPut(actionKey) { mutableListOf() }
@@ -24,37 +30,39 @@ object SecurityValidator {
     }
 
     fun isAccountLockedOut(phone: String): Boolean {
-        val lockTime = lockoutTimeMap[phone] ?: return false
+        val normalized = normalizePhone(phone)
+        val lockTime = lockoutTimeMap[normalized] ?: return false
         val currentTime = System.currentTimeMillis()
         if (currentTime - lockTime < LOCKOUT_DURATION_MS) {
-            return true // Account is temporarily locked
+            return true
         } else {
-            // Lockout expired
-            lockoutTimeMap.remove(phone)
-            failedLoginCountMap.remove(phone)
+            lockoutTimeMap.remove(normalized)
+            failedLoginCountMap.remove(normalized)
             return false
         }
     }
 
     fun recordFailedLogin(phone: String) {
-        val count = (failedLoginCountMap[phone] ?: 0) + 1
-        failedLoginCountMap[phone] = count
+        val normalized = normalizePhone(phone)
+        val count = (failedLoginCountMap[normalized] ?: 0) + 1
+        failedLoginCountMap[normalized] = count
         if (count >= 5) {
-            lockoutTimeMap[phone] = System.currentTimeMillis()
+            lockoutTimeMap[normalized] = System.currentTimeMillis()
         }
     }
 
     fun resetFailedLogin(phone: String) {
-        failedLoginCountMap.remove(phone)
-        lockoutTimeMap.remove(phone)
+        val normalized = normalizePhone(phone)
+        failedLoginCountMap.remove(normalized)
+        lockoutTimeMap.remove(normalized)
     }
 
     fun validatePhoneNumber(phone: String): String? {
-        val sanitized = phone.trim()
-        if (sanitized.isEmpty()) {
+        val normalized = normalizePhone(phone)
+        if (normalized.isEmpty()) {
             return "Phone number is required"
         }
-        if (!sanitized.matches(Regex("^[0-9]{10}$"))) {
+        if (normalized.length < 10) {
             return "Please enter a valid 10-digit phone number"
         }
         return null

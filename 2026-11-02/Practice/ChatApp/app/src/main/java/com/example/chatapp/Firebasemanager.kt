@@ -1,5 +1,6 @@
 package com.example.chatapp
 
+import android.util.Log
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.Query
@@ -95,10 +96,14 @@ object FirebaseManager {
     fun listenToMessages(chatroomId: String, onUpdate: (List<ChatMessage>) -> Unit): ListenerRegistration {
         return db.collection("chats")
             .whereEqualTo("chatroomId", chatroomId)
-            .orderBy("timestamp", Query.Direction.ASCENDING)
-            .addSnapshotListener { snapshot, _ ->
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    Log.e("FirebaseManager", "Error listening to messages", error)
+                }
                 if (snapshot != null) {
-                    val messages = snapshot.documents.mapNotNull { it.toObject(ChatMessage::class.java) }
+                    val messages = snapshot.documents
+                        .mapNotNull { it.toObject(ChatMessage::class.java) }
+                        .sortedBy { it.timestamp }
                     onUpdate(messages)
                 } else {
                     onUpdate(emptyList())
