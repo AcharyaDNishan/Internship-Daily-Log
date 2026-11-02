@@ -1,0 +1,33 @@
+<resources>
+    <string name="app_name">Task Manager</string>
+    <string name="all_tasks_completed">All tasks completed</string>
+    <string name="nice_work">Nice work!</string>
+    <string name="incomplete_tasks">Pending Tasks</string>
+    <string name="completed_tasks">Completed Tasks</string>
+    <string name="create_task">Create Task</string>
+    <string name="task_title">Task Title</string>
+    <string name="task_description">Task Description</string>
+    <string name="add_task">Add Task</string>
+    <string name="send_notification">Send Immediate Notification</string>
+    <string name="notify">Notify</string>
+    <string name="no_pending_tasks">No pending tasks!</string>
+    <string name="no_completed_tasks">No completed tasks yet!</string>
+    <string name="mark_completed">Mark Completed</string>
+    <string name="mark_incomplete">Mark Pending</string>
+    <string name="priority">Priority</string>
+    <string name="priority_high">High</string>
+    <string name="priority_medium">Medium</string>
+    <string name="priority_low">Low</string>
+    <string name="search_tasks">Search tasks…</string>
+    <string name="all_priorities">All</string>
+    <string name="task_progress">%1$d of %2$d tasks completed (%3$d%%)</string>
+    <string name="undo">Undo</string>
+    <string name="due_date">Due Date &amp; Time</string>
+    <string name="select_due_date">Select Date</string>
+    <string name="select_due_time">Select Time</string>
+    <string name="no_due_date">No due date set</string>
+    <string name="clear">Clear</string>
+    <string name="schedule_notification">Schedule Notification at Due Time</string>
+    <string name="overdue">OVERDUE</string>
+    <string name="due_prefix">Due: %1$s</string>
+</resources>
