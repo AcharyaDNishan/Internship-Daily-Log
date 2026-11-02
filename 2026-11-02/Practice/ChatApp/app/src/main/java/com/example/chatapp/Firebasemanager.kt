@@ -3,7 +3,6 @@ package com.example.chatapp
 import android.util.Log
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
-import com.google.firebase.firestore.Query
 import java.util.UUID
 
 data class User(

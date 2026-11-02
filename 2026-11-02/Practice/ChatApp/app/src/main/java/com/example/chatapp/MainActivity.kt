@@ -293,9 +293,7 @@ fun ChatScreen(
         ) {
             items(messages) { msg ->
                 val isMe = msg.userId == currentUser.uid || msg.senderNickname == currentUser.nickname
-                val displayMsg = msg.msg.ifEmpty {
-                    if (msg.user1Msg.isNotEmpty()) msg.user1Msg else msg.user2Msg
-                }
+                val displayMsg = msg.msg
 
                 Column(
                     modifier = Modifier.fillMaxWidth(),
