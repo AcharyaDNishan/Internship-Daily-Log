@@ -292,9 +292,8 @@ fun ChatScreen(
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             items(messages) { msg ->
-                val isUser1Sender = msg.senderUid == chatroom.user1Uid
-                val isMe = msg.senderUid == currentUser.uid
-                val displayMsg = if (isUser1Sender) msg.user1Msg else msg.user2Msg
+                val isMe = msg.userId == currentUser.uid
+                val displayMsg = msg.msg
 
                 Column(
                     modifier = Modifier.fillMaxWidth(),

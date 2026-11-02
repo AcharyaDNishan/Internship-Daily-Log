@@ -21,10 +21,9 @@ data class Chatroom(
 data class ChatMessage(
     val chatId: String = "",
     val chatroomId: String = "",
-    val senderUid: String = "",
+    val userId: String = "",
     val senderNickname: String = "",
-    val user1Msg: String = "",
-    val user2Msg: String = "",
+    val msg: String = "",
     val timestamp: Long = System.currentTimeMillis()
 )
 
@@ -81,14 +80,12 @@ object FirebaseManager {
 
     fun sendMessage(chatroom: Chatroom, sender: User, text: String, onComplete: () -> Unit = {}) {
         val chatId = UUID.randomUUID().toString()
-        val isUser1 = sender.uid == chatroom.user1Uid
         val message = ChatMessage(
             chatId = chatId,
             chatroomId = chatroom.chatroomId,
-            senderUid = sender.uid,
+            userId = sender.uid,
             senderNickname = sender.nickname,
-            user1Msg = if (isUser1) text else "",
-            user2Msg = if (!isUser1) text else "",
+            msg = text,
             timestamp = System.currentTimeMillis()
         )
         db.collection("chats").document(chatId).set(message)
