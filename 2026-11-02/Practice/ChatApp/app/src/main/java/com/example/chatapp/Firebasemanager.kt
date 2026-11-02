@@ -109,4 +109,39 @@ object FirebaseManager {
                 }
             }
     }
+
+    fun deleteUserData(user: User) {
+        deleteUserDataByUid(user.uid)
+    }
+
+    fun deleteUserDataByUid(uid: String) {
+        if (uid.isBlank()) return
+
+        // 1. Delete user profile document
+        db.collection("users").document(uid).delete()
+
+        // 2. Delete all chats sent by this user
+        db.collection("chats").whereEqualTo("userId", uid).get()
+            .addOnSuccessListener { snapshot ->
+                for (doc in snapshot.documents) {
+                    doc.reference.delete()
+                }
+            }
+
+        // 3. Delete chatrooms involving this user and remaining messages
+        db.collection("chatrooms").get().addOnSuccessListener { snapshot ->
+            for (doc in snapshot.documents) {
+                val chatroom = doc.toObject(Chatroom::class.java)
+                if (chatroom != null && (chatroom.user1Uid == uid || chatroom.user2Uid == uid)) {
+                    db.collection("chats").whereEqualTo("chatroomId", chatroom.chatroomId).get()
+                        .addOnSuccessListener { msgSnapshot ->
+                            for (msgDoc in msgSnapshot.documents) {
+                                msgDoc.reference.delete()
+                            }
+                        }
+                    doc.reference.delete()
+                }
+            }
+        }
+    }
 }

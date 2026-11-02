@@ -42,9 +42,13 @@ sealed class Screen {
 }
 
 @Composable
-fun ChatAppMain() {
+fun ChatAppMain(onUserChanged: (User?) -> Unit = {}) {
     var currentScreen by remember { mutableStateOf<Screen>(Screen.UserRegistration) }
     var currentUser by remember { mutableStateOf<User?>(null) }
+
+    LaunchedEffect(currentUser) {
+        onUserChanged(currentUser)
+    }
 
     when (val screen = currentScreen) {
         is Screen.UserRegistration -> {
