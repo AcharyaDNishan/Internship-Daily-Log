@@ -159,6 +159,3 @@ fun MapScreen(modifier: Modifier = Modifier) {
         }
     }
 }
-
-
-
