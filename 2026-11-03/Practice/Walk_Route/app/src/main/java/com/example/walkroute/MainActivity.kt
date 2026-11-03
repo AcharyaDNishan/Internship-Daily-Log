@@ -16,6 +16,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableDoubleStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -23,8 +24,10 @@ import androidx.compose.ui.unit.dp
 import com.example.walkroute.ui.theme.WalkRouteTheme
 import com.mapbox.geojson.Point
 import com.mapbox.maps.CameraOptions
+import com.mapbox.maps.Style
 import com.mapbox.maps.extension.compose.MapboxMap
 import com.mapbox.maps.extension.compose.animation.viewport.rememberMapViewportState
+import com.mapbox.maps.extension.compose.style.MapStyle
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -47,6 +50,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MapScreen(modifier: Modifier = Modifier) {
     var zoomLevel by remember { mutableDoubleStateOf(10.0) }
+    var currentStyle by remember { mutableStateOf(Style.STANDARD) }
     val mapViewportState = rememberMapViewportState {
         setCameraOptions(
             CameraOptions.Builder()
@@ -60,6 +64,9 @@ fun MapScreen(modifier: Modifier = Modifier) {
         MapboxMap(
             modifier = Modifier.weight(1f),
             mapViewportState = mapViewportState,
+            style = {
+                MapStyle(style = currentStyle)
+            },
         )
         Row(
             modifier = Modifier
@@ -88,7 +95,19 @@ fun MapScreen(modifier: Modifier = Modifier) {
             ) {
                 Text("Zoom Out")
             }
+            Button(
+                onClick = {
+                    currentStyle = if (currentStyle == Style.STANDARD) {
+                        Style.STANDARD_SATELLITE
+                    } else {
+                        Style.STANDARD
+                    }
+                },
+            ) {
+                Text(if (currentStyle == Style.STANDARD) "Satellite" else "Standard")
+            }
         }
     }
 }
+
 
