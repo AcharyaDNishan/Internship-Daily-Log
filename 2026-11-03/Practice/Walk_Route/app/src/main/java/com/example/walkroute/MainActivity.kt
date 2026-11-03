@@ -20,6 +20,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.example.walkroute.ui.theme.WalkRouteTheme
 import com.mapbox.android.core.permissions.PermissionsListener
@@ -30,6 +31,7 @@ import com.mapbox.maps.Style
 import com.mapbox.maps.extension.compose.MapEffect
 import com.mapbox.maps.extension.compose.MapboxMap
 import com.mapbox.maps.extension.compose.animation.viewport.rememberMapViewportState
+import com.mapbox.maps.extension.compose.annotation.Marker
 import com.mapbox.maps.extension.compose.style.MapStyle
 import com.mapbox.maps.plugin.PuckBearing
 import com.mapbox.maps.plugin.locationcomponent.createDefault2DPuck
@@ -106,6 +108,14 @@ fun MapScreen(modifier: Modifier = Modifier) {
                 MapStyle(style = currentStyle)
             },
         ) {
+            Marker(
+                point = Point.fromLngLat(-74.0060, 40.7128),
+                color = Color.Blue,           // Set the main marker color
+                stroke = Color.Magenta,       // Add a stroke color
+                innerColor = Color.White,
+
+                text = "New York City"
+            )
             MapEffect(Unit) { mapView ->
                 mapView.location.updateSettings {
                     locationPuck = createDefault2DPuck(withBearing = true)
