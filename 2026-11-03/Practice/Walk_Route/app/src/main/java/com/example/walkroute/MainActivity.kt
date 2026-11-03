@@ -115,45 +115,46 @@ fun MapScreen(modifier: Modifier = Modifier) {
                 }
                 mapViewportState.transitionToFollowPuckState()
             }
+        }
 
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp),
-                horizontalArrangement = Arrangement.SpaceEvenly,
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+        ) {
+            Button(
+                onClick = {
+                    zoomLevel++
+                    mapViewportState.setCameraOptions(
+                        CameraOptions.Builder().zoom(zoomLevel).build(),
+                    )
+                },
             ) {
-                Button(
-                    onClick = {
-                        zoomLevel++
-                        mapViewportState.setCameraOptions(
-                            CameraOptions.Builder().zoom(zoomLevel).build(),
-                        )
-                    },
-                ) {
-                    Text("Zoom In")
-                }
+                Text("Zoom In")
+            }
 
-                Button(
-                    onClick = {
-                        zoomLevel--
-                        mapViewportState.setCameraOptions(
-                            CameraOptions.Builder().zoom(zoomLevel).build(),
-                        )
-                    },
-                ) {
-                    Text("Zoom Out")
-                }
-                Button(
-                    onClick = {
-                        currentStyle = if (currentStyle == Style.STANDARD) {
-                            Style.STANDARD_SATELLITE
-                        } else {
-                            Style.STANDARD
-                        }
-                    },
-                ) {
-                    Text(if (currentStyle == Style.STANDARD) "Satellite" else "Standard")
-                }
+            Button(
+                onClick = {
+                    zoomLevel--
+                    mapViewportState.setCameraOptions(
+                        CameraOptions.Builder().zoom(zoomLevel).build(),
+                    )
+                },
+            ) {
+                Text("Zoom Out")
+            }
+
+            Button(
+                onClick = {
+                    currentStyle = if (currentStyle == Style.STANDARD) {
+                        Style.STANDARD_SATELLITE
+                    } else {
+                        Style.STANDARD
+                    }
+                },
+            ) {
+                Text(if (currentStyle == Style.STANDARD) "Satellite" else "Standard")
             }
         }
     }
