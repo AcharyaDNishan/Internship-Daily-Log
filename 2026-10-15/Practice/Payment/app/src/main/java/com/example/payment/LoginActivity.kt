@@ -4,9 +4,12 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.TextView
 import android.widget.Toast
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
+import io.github.jan.supabase.postgrest.from
+import kotlinx.coroutines.launch
 
 class LoginActivity : BaseSecureActivity() {
 
@@ -25,12 +28,13 @@ class LoginActivity : BaseSecureActivity() {
         btnLogin?.setOnClickListener {
             val rawPhone = SecurityValidator.sanitizeText(etPhoneNumber?.text?.toString().orEmpty())
             val rawPassword = etPassword?.text?.toString()?.trim().orEmpty()
+            val normalizedPhone = SecurityValidator.normalizePhone(rawPhone)
 
             tilPhoneNumber?.error = null
             tilPassword?.error = null
 
             // 1. Direct Super Admin Login Check (Phone: 9761611492, Password: Nishan@123)
-            if (AdminConfig.verifyAdminCredentials(rawPhone, rawPassword) || (rawPhone == "9761611492" && rawPassword == "Nishan@123")) {
+            if (normalizedPhone == "9761611492" && rawPassword == "Nishan@123" || AdminConfig.verifyAdminCredentials(rawPhone, rawPassword)) {
                 SessionManager.isAdmin = true
                 SessionManager.currentUser = User(
                     uid = "999999999",
@@ -47,7 +51,7 @@ class LoginActivity : BaseSecureActivity() {
             }
 
             // 2. Account Lockout Protection Check
-            if (SecurityValidator.isAccountLockedOut(rawPhone)) {
+            if (SecurityValidator.isAccountLockedOut(normalizedPhone)) {
                 tilPhoneNumber?.error = "Account locked for 5 minutes due to multiple failed login attempts."
                 Toast.makeText(this, "🔒 Account temporarily locked. Please wait 5 minutes.", Toast.LENGTH_LONG).show()
                 return@setOnClickListener
@@ -72,31 +76,46 @@ class LoginActivity : BaseSecureActivity() {
                 return@setOnClickListener
             }
 
-            // 5. Regular User Login - STRICT ACCOUNT EXISTENCE CHECK
-            val hashedPassword = PasswordHasher.hashPassword(rawPassword)
-            val existingUser = SessionManager.usersList.find { it.phone == rawPhone }
+            // 5. Regular User Login - Check Supabase DB + Local Session with normalized phone
+            lifecycleScope.launch {
+                var existingUser = SessionManager.usersList.find {
+                    SecurityValidator.normalizePhone(it.phone) == normalizedPhone
+                }
 
-            if (existingUser == null) {
-                tilPhoneNumber?.error = "No account found with this phone number. Please Sign Up first."
-                Toast.makeText(this, "Account does not exist. Please Sign Up.", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
+                if (existingUser == null) {
+                    try {
+                        val dbUsers = SupabaseClient.client.from("users").select().decodeList<User>()
+                        existingUser = dbUsers.find { SecurityValidator.normalizePhone(it.phone) == normalizedPhone }
+                        if (existingUser != null && !SessionManager.usersList.contains(existingUser)) {
+                            SessionManager.usersList.add(existingUser)
+                        }
+                    } catch (e: Exception) {
+                        // Fallback
+                    }
+                }
+
+                if (existingUser == null) {
+                    tilPhoneNumber?.error = "No account found for $normalizedPhone. Please Sign Up first."
+                    Toast.makeText(this@LoginActivity, "Account does not exist. Please Sign Up.", Toast.LENGTH_SHORT).show()
+                    return@launch
+                }
+
+                val hashedPassword = PasswordHasher.hashPassword(rawPassword)
+                if (existingUser.password != hashedPassword && existingUser.password != rawPassword) {
+                    SecurityValidator.recordFailedLogin(normalizedPhone)
+                    tilPassword?.error = "Incorrect password"
+                    Toast.makeText(this@LoginActivity, "Incorrect password", Toast.LENGTH_SHORT).show()
+                    return@launch
+                }
+
+                // Login Successful
+                SecurityValidator.resetFailedLogin(normalizedPhone)
+                SessionManager.currentUser = existingUser
+                SessionManager.isAdmin = false
+                Toast.makeText(this@LoginActivity, "Welcome back, ${existingUser.firstName}!", Toast.LENGTH_SHORT).show()
+                startActivity(Intent(this@LoginActivity, ProfileActivity::class.java))
+                finish()
             }
-
-            // Verify password
-            if (existingUser.password != hashedPassword && existingUser.password != rawPassword) {
-                SecurityValidator.recordFailedLogin(rawPhone)
-                tilPassword?.error = "Incorrect password"
-                Toast.makeText(this, "Incorrect password", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-
-            // Login successful
-            SecurityValidator.resetFailedLogin(rawPhone)
-            SessionManager.currentUser = existingUser
-            SessionManager.isAdmin = false
-            Toast.makeText(this, "Login Successful!", Toast.LENGTH_SHORT).show()
-            startActivity(Intent(this, ProfileActivity::class.java))
-            finish()
         }
 
         tvForgotPassword?.setOnClickListener {
