@@ -27,9 +27,13 @@ import com.mapbox.android.core.permissions.PermissionsManager
 import com.mapbox.geojson.Point
 import com.mapbox.maps.CameraOptions
 import com.mapbox.maps.Style
+import com.mapbox.maps.extension.compose.MapEffect
 import com.mapbox.maps.extension.compose.MapboxMap
 import com.mapbox.maps.extension.compose.animation.viewport.rememberMapViewportState
 import com.mapbox.maps.extension.compose.style.MapStyle
+import com.mapbox.maps.plugin.PuckBearing
+import com.mapbox.maps.plugin.locationcomponent.createDefault2DPuck
+import com.mapbox.maps.plugin.locationcomponent.location
 
 class MainActivity : ComponentActivity(), PermissionsListener {
     private lateinit var permissionsManager: PermissionsManager
@@ -101,44 +105,55 @@ fun MapScreen(modifier: Modifier = Modifier) {
             style = {
                 MapStyle(style = currentStyle)
             },
-        )
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly,
         ) {
-            Button(
-                onClick = {
-                    zoomLevel++
-                    mapViewportState.setCameraOptions(
-                        CameraOptions.Builder().zoom(zoomLevel).build(),
-                    )
-                },
-            ) {
-                Text("Zoom In")
+            MapEffect(Unit) { mapView ->
+                mapView.location.updateSettings {
+                    locationPuck = createDefault2DPuck(withBearing = true)
+                    enabled = true
+                    puckBearing = PuckBearing.COURSE
+                    puckBearingEnabled = true
+                }
+                mapViewportState.transitionToFollowPuckState()
             }
 
-            Button(
-                onClick = {
-                    zoomLevel--
-                    mapViewportState.setCameraOptions(
-                        CameraOptions.Builder().zoom(zoomLevel).build(),
-                    )
-                },
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly,
             ) {
-                Text("Zoom Out")
-            }
-            Button(
-                onClick = {
-                    currentStyle = if (currentStyle == Style.STANDARD) {
-                        Style.STANDARD_SATELLITE
-                    } else {
-                        Style.STANDARD
-                    }
-                },
-            ) {
-                Text(if (currentStyle == Style.STANDARD) "Satellite" else "Standard")
+                Button(
+                    onClick = {
+                        zoomLevel++
+                        mapViewportState.setCameraOptions(
+                            CameraOptions.Builder().zoom(zoomLevel).build(),
+                        )
+                    },
+                ) {
+                    Text("Zoom In")
+                }
+
+                Button(
+                    onClick = {
+                        zoomLevel--
+                        mapViewportState.setCameraOptions(
+                            CameraOptions.Builder().zoom(zoomLevel).build(),
+                        )
+                    },
+                ) {
+                    Text("Zoom Out")
+                }
+                Button(
+                    onClick = {
+                        currentStyle = if (currentStyle == Style.STANDARD) {
+                            Style.STANDARD_SATELLITE
+                        } else {
+                            Style.STANDARD
+                        }
+                    },
+                ) {
+                    Text(if (currentStyle == Style.STANDARD) "Satellite" else "Standard")
+                }
             }
         }
     }
