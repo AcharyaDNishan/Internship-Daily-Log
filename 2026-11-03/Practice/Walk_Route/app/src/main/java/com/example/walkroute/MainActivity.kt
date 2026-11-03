@@ -22,6 +22,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.walkroute.ui.theme.WalkRouteTheme
+import com.mapbox.android.core.permissions.PermissionsListener
 import com.mapbox.android.core.permissions.PermissionsManager
 import com.mapbox.geojson.Point
 import com.mapbox.maps.CameraOptions
@@ -30,25 +31,15 @@ import com.mapbox.maps.extension.compose.MapboxMap
 import com.mapbox.maps.extension.compose.animation.viewport.rememberMapViewportState
 import com.mapbox.maps.extension.compose.style.MapStyle
 
-class MainActivity : ComponentActivity() {
+class MainActivity : ComponentActivity(), PermissionsListener {
+    private lateinit var permissionsManager: PermissionsManager
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        if (PermissionsManager.areLocationPermissionsGranted(context)) {
+        if (PermissionsManager.areLocationPermissionsGranted(this)) {
             // Location permission granted, enable location features
         } else {
-            var permissionsManager = PermissionsManager(object : PermissionsListener {
-                override fun onExplanationNeeded(permissionsToExplain: List<String>) {
-                    // Optionally show a dialog explaining why the app needs location permission
-                }
-                override fun onPermissionResult(granted: Boolean) {
-                    if (granted) {
-                        // Permission granted, enable location features
-                    } else {
-                        // Permission denied, show a message or disable location features
-                    }
-                }
-            })
-            // Trigger the permission request
+            permissionsManager = PermissionsManager(this)
             permissionsManager.requestLocationPermissions(this)
         }
         enableEdgeToEdge()
@@ -64,14 +55,29 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-    fun onRequestPermissionsResult(
+
+    @Deprecated("Deprecated in Java")
+    override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<String>,
-        grantResults: IntArray,
-        onRequestPermissionsResult: Nothing?.(Int, Array<out String?>, IntArray) -> Unit
+        grantResults: IntArray
     ) {
-        val permissionsManager = null
-        permissionsManager.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (::permissionsManager.isInitialized) {
+            permissionsManager.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        }
+    }
+
+    override fun onExplanationNeeded(permissionsToExplain: List<String>) {
+        // Optionally show a dialog explaining why the app needs location permission
+    }
+
+    override fun onPermissionResult(granted: Boolean) {
+        if (granted) {
+            // Permission granted, enable location features
+        } else {
+            // Permission denied, show a message or disable location features
+        }
     }
 }
 
@@ -137,5 +143,6 @@ fun MapScreen(modifier: Modifier = Modifier) {
         }
     }
 }
+
 
 
