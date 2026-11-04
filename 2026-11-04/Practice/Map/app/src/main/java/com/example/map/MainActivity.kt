@@ -16,6 +16,12 @@ import com.mapbox.maps.extension.compose.style.layers.generated.CircleLayer
 import com.mapbox.maps.extension.compose.style.sources.generated.rememberVectorSourceState
 import com.mapbox.maps.extension.compose.style.ColorValue
 import com.mapbox.maps.extension.compose.style.StringValue
+import com.mapbox.maps.extension.compose.style.layers.generated.LineLayer
+import com.mapbox.maps.extension.compose.style.sources.GeoJSONData
+import com.mapbox.maps.extension.compose.style.sources.generated.rememberGeoJsonSourceState
+import com.mapbox.maps.extension.compose.style.standard.MapboxStandardStyle
+import com.mapbox.maps.extension.style.layers.generated.FillLayer
+import com.mapbox.maps.extension.style.layers.generated.LineLayer
 
 @Suppress("COMPOSE_APPLIER_CALL_MISMATCH")
 class MainActivity : ComponentActivity() {
@@ -30,7 +36,20 @@ class MainActivity : ComponentActivity() {
                 vectorSource.url = StringValue("mapbox://nishann.3dbfi3ma2q25")
                 MapboxMap(
                     modifier = Modifier.fillMaxSize(),
-
+                    style={
+                        // defined in the strongly typed MapboxStandardStyle and MapboxStandardSatelliteStyle composable function.
+                        MapboxStandardStyle(
+                            middleSlot = {
+                                LineLayer(
+                                    sourceState = rememberGeoJsonSourceState {
+                                        data = GeoJSONData("asset://line-source.geojson")
+                                    }
+                                ) {
+                                    lineColor = ColorValue(Color(255, 156, 0))
+                                }
+                            }
+                        )
+                    },
                     mapViewportState = rememberMapViewportState {
                         setCameraOptions {
                             center(
