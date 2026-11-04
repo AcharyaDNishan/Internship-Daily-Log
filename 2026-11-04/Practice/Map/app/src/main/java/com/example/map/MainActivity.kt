@@ -17,23 +17,17 @@ import com.mapbox.maps.extension.compose.style.sources.generated.rememberVectorS
 import com.mapbox.maps.extension.compose.style.ColorValue
 import com.mapbox.maps.extension.compose.style.StringValue
 
+@Suppress("COMPOSE_APPLIER_CALL_MISMATCH")
 class MainActivity : ComponentActivity() {
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         enableEdgeToEdge()
-
         setContent {
             MapTheme {
-
                 val vectorSource = rememberVectorSourceState(
                     sourceId = "my-vector-source"
                 )
-
-                vectorSource.url =
-                    StringValue("mapbox://nishann.3dbfi3ma2q25")
-
+                vectorSource.url = StringValue("mapbox://nishann.3dbfi3ma2q25")
                 MapboxMap(
                     modifier = Modifier.fillMaxSize(),
 
@@ -49,13 +43,11 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                 ) {
-
                     CircleLayer(
                         sourceState = vectorSource,
                         layerId = "my-circle-layer"
                     ) {
                         sourceLayer = StringValue("some-source-layer")
-
                         circleColor = ColorValue(Color.Red)
                     }
                 }
