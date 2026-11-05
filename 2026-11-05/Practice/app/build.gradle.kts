@@ -1,6 +1,9 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
+    id("com.android.application")
+    id("org.jetbrains.kotlin.android")
+    id("com.chaquo.python")
 }
 
 android {
@@ -15,7 +18,9 @@ android {
         targetSdk = 37
         versionCode = 1
         versionName = "1.0"
-
+        ndk {
+            abiFilters += listOf("arm64-v8a", "x86_64")
+        }
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -32,6 +37,11 @@ android {
     }
     buildFeatures {
         compose = true
+    }
+}
+chaquopy {
+    defaultConfig {
+        version = "3.11"
     }
 }
 
