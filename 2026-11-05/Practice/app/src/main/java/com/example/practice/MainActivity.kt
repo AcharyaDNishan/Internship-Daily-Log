@@ -1,47 +1,42 @@
 package com.example.practice
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import com.example.practice.ui.theme.PracticeTheme
+import com.chaquo.python.Python
+import com.chaquo.python.android.AndroidPlatform
 
 class MainActivity : ComponentActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        setContent {
-            PracticeTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
+
+        Thread {
+            try {
+                if (!Python.isStarted()) {
+                    Python.start(AndroidPlatform(applicationContext))
                 }
+
+                val py = Python.getInstance()
+
+                // Access Python file
+                val module = py.getModule("my_python")
+
+                // Call Python functions
+                val answer = module.callAttr(
+                    "multiply", 10, 20
+                ).toInt()
+
+                val greeting = module.callAttr(
+                    "greet", "Kotlin"
+                ).toString()
+
+                Log.d("PYTHON", "Answer: $answer")
+                Log.d("PYTHON", greeting)
+
+            } catch (e: Exception) {
+                Log.e("PYTHON", "Python error", e)
             }
-        }
-    }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    PracticeTheme {
-        Greeting("Android")
+        }.start()
     }
 }
