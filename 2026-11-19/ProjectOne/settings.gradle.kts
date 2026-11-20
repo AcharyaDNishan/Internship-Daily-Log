@@ -23,3 +23,5 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "ProjectOne"
+include(":app")
+ 
