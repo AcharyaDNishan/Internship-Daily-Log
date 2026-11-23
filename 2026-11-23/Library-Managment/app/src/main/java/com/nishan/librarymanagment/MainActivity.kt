@@ -46,6 +46,7 @@ import java.io.File
 data class BookItem(
     val title: String,
     val author: String,
+    val rackno: String = "",
     val isBorrowed: Boolean = false
 )
 
@@ -82,7 +83,13 @@ private fun getBookFile(context: Context): File {
     return file
 }
 
-private fun saveBookToFile(context: Context, title: String, author: String,rackno: String, isBorrowed: Boolean): Boolean {
+private fun saveBookToFile(
+    context: Context,
+    title: String,
+    author: String,
+    rackno: String,
+    isBorrowed: Boolean
+): Boolean {
     return try {
         val file = getBookFile(context)
         file.appendText("$title|$author|$rackno|$isBorrowed\n")
@@ -103,8 +110,19 @@ private fun readBooksFromFile(context: Context): List<BookItem> {
                 if (parts.size >= 2) {
                     val title = parts[0].trim()
                     val author = parts[1].trim()
-                    val isBorrowed = parts.getOrNull(2)?.trim()?.toBoolean() ?: false
-                    BookItem(title = title, author = author, isBorrowed = isBorrowed)
+                    val rackno = if (parts.size >= 4) parts[2].trim() else if (parts.size == 3 && !parts[2].trim().toBooleanStrictOrNull().let { it != null }) parts[2].trim() else ""
+                    val isBorrowed = if (parts.size >= 4) {
+                        parts[3].trim().toBoolean()
+                    } else if (parts.size == 3 && parts[2].trim().toBooleanStrictOrNull() != null) {
+                        parts[2].trim().toBoolean()
+                    } else false
+
+                    BookItem(
+                        title = title,
+                        author = author,
+                        rackno = rackno,
+                        isBorrowed = isBorrowed
+                    )
                 } else null
             }
     } catch (e: Exception) {
@@ -116,14 +134,14 @@ private fun readBooksFromFile(context: Context): List<BookItem> {
 private fun updateBookBorrowedStatus(context: Context, targetBook: BookItem, isBorrowed: Boolean): List<BookItem> {
     return try {
         val books = readBooksFromFile(context).map { book ->
-            if (book.title == targetBook.title && book.author == targetBook.author) {
+            if (book.title == targetBook.title && book.author == targetBook.author && book.rackno == targetBook.rackno) {
                 book.copy(isBorrowed = isBorrowed)
             } else {
                 book
             }
         }
         val file = getBookFile(context)
-        val content = books.joinToString("\n") { "${it.title}|${it.author}|${it.isBorrowed}" }
+        val content = books.joinToString("\n") { "${it.title}|${it.author}|${it.rackno}|${it.isBorrowed}" }
         file.writeText(if (content.isNotEmpty()) "$content\n" else "")
         books
     } catch (e: Exception) {
@@ -186,8 +204,8 @@ fun Book(onBack: () -> Unit) {
     val context = LocalContext.current
     var title by remember { mutableStateOf("") }
     var author by remember { mutableStateOf("") }
-    var isBorrowed by remember { mutableStateOf(false) }
     var rackno by remember { mutableStateOf("") }
+    var isBorrowed by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -220,7 +238,7 @@ fun Book(onBack: () -> Unit) {
             singleLine = true,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 16.dp)
+                .padding(bottom = 12.dp)
         )
 
         OutlinedTextField(
@@ -252,7 +270,7 @@ fun Book(onBack: () -> Unit) {
                 if (title.isBlank() || author.isBlank()) {
                     Toast.makeText(context, "Please enter both Title and Author", Toast.LENGTH_SHORT).show()
                 } else {
-                    val success = saveBookToFile(context, title.trim(), author.trim(),rackno.trim(),isBorrowed)
+                    val success = saveBookToFile(context, title.trim(), author.trim(), rackno.trim(), isBorrowed)
                     if (success) {
                         Toast.makeText(context, "Book saved successfully!", Toast.LENGTH_SHORT).show()
                         title = ""
@@ -347,7 +365,8 @@ fun Search(onBack: () -> Unit) {
     val filteredBooks = allBooks.filter { book ->
         val matchesQuery = searchQuery.isBlank() ||
                 book.title.contains(searchQuery, ignoreCase = true) ||
-                book.author.contains(searchQuery, ignoreCase = true)
+                book.author.contains(searchQuery, ignoreCase = true) ||
+                book.rackno.contains(searchQuery, ignoreCase = true)
         val matchesBorrowedFilter = !filterOnlyBorrowed || book.isBorrowed
         matchesQuery && matchesBorrowedFilter
     }
@@ -377,7 +396,7 @@ fun Search(onBack: () -> Unit) {
         OutlinedTextField(
             value = searchQuery,
             onValueChange = { searchQuery = it },
-            label = { Text("Search by Title or Author") },
+            label = { Text("Search by Title, Author, or Rack No") },
             singleLine = true,
             modifier = Modifier
                 .fillMaxWidth()
@@ -454,6 +473,13 @@ fun BookCard(
                     fontSize = 14.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+                if (book.rackno.isNotBlank()) {
+                    Text(
+                        text = "Rack No: ${book.rackno}",
+                        fontSize = 14.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = if (book.isBorrowed) "Status: Borrowed" else "Status: Available",
