@@ -9,7 +9,20 @@
     <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="063e9e83-8591-4a31-aa3d-b3e5db7ad575" name="Changes" comment="" />
+    <list default="true" id="063e9e83-8591-4a31-aa3d-b3e5db7ad575" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/../../../2026-10-14/Practice/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../../../2026-10-14/Practice/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../2026-10-28/Practice/.idea/deploymentTargetSelector.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../../../2026-10-28/Practice/.idea/deploymentTargetSelector.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../2026-10-28/Practice/.idea/gradle.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../../../2026-10-28/Practice/.idea/gradle.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../2026-10-28/Practice/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../../../2026-10-28/Practice/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../2026-10-28/TheIQTest/.idea/gradle.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../../../2026-10-28/TheIQTest/.idea/gradle.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../2026-10-28/TheIQTest/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../../../2026-10-28/TheIQTest/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Practice/.idea/gradle.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../Practice/.idea/gradle.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/caches/deviceStreaming.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/caches/deviceStreaming.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../2026-11-20/Visiting Card/app/src/main/java/com/nishan/visitingcard/MainActivity.kt" beforeDir="false" afterPath="$PROJECT_DIR$/../../../2026-11-20/Visiting Card/app/src/main/java/com/nishan/visitingcard/MainActivity.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../2026-11-20/Visiting Card/app/src/main/res/drawable/ic_launcher_background.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../../../2026-11-20/Visiting Card/app/src/main/res/drawable/ic_launcher_background.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../../2026-11-20/Visiting Card/app/src/main/res/drawable/ic_launcher_foreground.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../../../2026-11-20/Visiting Card/app/src/main/res/drawable/ic_launcher_foreground.xml" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -18,7 +31,7 @@
   <component name="ClangdSettings">
     <option name="formatViaClangd" value="false" />
   </component>
-  <component name="ExecutionTargetManager" SELECTED_TARGET="device_and_snapshot_combo_box_target[LocalEmulator::path=/Users/nishan/.android/avd/Medium.avd]" />
+  <component name="ExecutionTargetManager" SELECTED_TARGET="device_and_snapshot_combo_box_target[]" />
   <component name="ExternalProjectsData">
     <projectState path="$PROJECT_DIR$">
       <ProjectState />
@@ -56,6 +69,10 @@
     &quot;accountId&quot;: &quot;be0ef998-299c-4a8c-8e5e-8c2b3e502066&quot;
   }
 }</component>
+  <component name="KmpPackageLockUpdaterState"><![CDATA[{
+  "jsModulesKotlinGradlePluginVersion": {},
+  "wasmModulesKotlinGradlePluginVersion": {}
+}]]></component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 8,
   &quot;fromUser&quot;: false
@@ -68,6 +85,7 @@
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
     "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "CidrDebugProfileConversion": "true",
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.cidr.known.project.marker": "true",
@@ -78,7 +96,8 @@
     "cf.first.check.clang-format": "false",
     "cidr.known.project.marker": "true",
     "git-widget-placeholder": "Practice",
-    "kotlin-language-version-configured": "true"
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "/home/azazael/Documents/GitHub/Internship-Daily-Log/2026-10-30/Practice/Task Manager"
   }
 }]]></component>
   <component name="RunManager">
