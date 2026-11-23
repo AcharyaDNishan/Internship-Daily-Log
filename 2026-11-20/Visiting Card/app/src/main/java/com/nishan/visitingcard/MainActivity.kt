@@ -1,14 +1,17 @@
 package com.nishan.visitingcard
 
-import android.app.DownloadManager
+import android.content.ContentValues
 import android.content.Context
-import android.net.Uri
+import android.graphics.Bitmap
+import android.os.Build
 import android.os.Bundle
 import android.os.Environment
+import android.provider.MediaStore
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -31,12 +34,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.graphics.asAndroidBitmap
+import androidx.compose.ui.graphics.rememberGraphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.nishan.visitingcard.ui.theme.VisitingCardTheme
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -139,15 +147,32 @@ fun VisitingCard(
     location: String = "",
 ) {
     val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+    val graphicsLayer = rememberGraphicsLayer()
+
     Box(
         modifier = modifier
             .padding(16.dp)
             .width(300.dp)
             .height(200.dp)
+            .drawWithContent {
+                graphicsLayer.record {
+                    this@drawWithContent.drawContent()
+                }
+                drawContent()
+            }
+            .background(MaterialTheme.colorScheme.surface)
             .border(width = 2.dp, color = MaterialTheme.colorScheme.primary)
             .padding(16.dp)
             .clickable {
-                downloadFile(context, "/", "Visiting Card.docx")
+                coroutineScope.launch {
+                    try {
+                        val bitmap = graphicsLayer.toImageBitmap().asAndroidBitmap()
+                        saveCardAsJpeg(context, bitmap)
+                    } catch (e: Exception) {
+                        Toast.makeText(context, "Failed to capture card: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
+                    }
+                }
             },
         contentAlignment = Alignment.Center,
     ) {
@@ -191,23 +216,34 @@ fun VisitingCard(
     }
 }
 
-fun downloadFile(context: Context, url: String, fileName: String) {
-    val uri = Uri.parse(url)
-    val scheme = uri.scheme
-    if (scheme != "http" && scheme != "https") {
-        Toast.makeText(context, "Cannot download: Please provide a valid HTTP/HTTPS URL", Toast.LENGTH_SHORT).show()
-        return
+fun saveCardAsJpeg(context: Context, bitmap: Bitmap) {
+    val filename = "VisitingCard_${System.currentTimeMillis()}.jpg"
+    val resolver = context.contentResolver
+    val contentValues = ContentValues().apply {
+        put(MediaStore.MediaColumns.DISPLAY_NAME, filename)
+        put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/VisitingCards")
+            put(MediaStore.MediaColumns.IS_PENDING, 1)
+        }
     }
 
-    try {
-        val request = DownloadManager.Request(uri)
-            .setTitle(fileName)
-            .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-            .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName)
-        val manager = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
-        manager.enqueue(request)
-        Toast.makeText(context, "Downloading $fileName...", Toast.LENGTH_SHORT).show()
-    } catch (e: Exception) {
-        Toast.makeText(context, "Download failed: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
+    val imageUri = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
+    if (imageUri != null) {
+        try {
+            resolver.openOutputStream(imageUri)?.use { stream ->
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream)
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                contentValues.clear()
+                contentValues.put(MediaStore.MediaColumns.IS_PENDING, 0)
+                resolver.update(imageUri, contentValues, null, null)
+            }
+            Toast.makeText(context, "Saved $filename to Pictures/VisitingCards", Toast.LENGTH_LONG).show()
+        } catch (e: Exception) {
+            Toast.makeText(context, "Failed to save card: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
+        }
+    } else {
+        Toast.makeText(context, "Failed to create image file", Toast.LENGTH_SHORT).show()
     }
 }
