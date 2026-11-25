@@ -61,7 +61,7 @@ fun Greeting(modifier: Modifier = Modifier) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        val statusText = when (winner) {
+  val statusText = when (winner) {
             "Draw" -> "It's a Draw!"
             "X", "O" -> "Player $winner Wins!"
             else -> "Player $currentPlayer's Turn"
