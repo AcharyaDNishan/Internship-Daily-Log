@@ -93,8 +93,9 @@ data class NewsItem(
     val timestamp: Long = System.currentTimeMillis()
 )
 
-// SQLite Database Helper for creating SQL table and storing news locally
-class NewsDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
+// Thread-safe Singleton SQLite Database Helper
+class NewsDatabaseHelper private constructor(context: Context) :
+    SQLiteOpenHelper(context.applicationContext, DATABASE_NAME, null, DATABASE_VERSION) {
 
     companion object {
         private const val DATABASE_NAME = "news_database.db"
@@ -105,10 +106,18 @@ class NewsDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_
         const val COLUMN_AUTHOR = "author"
         const val COLUMN_BODY = "body"
         const val COLUMN_TIMESTAMP = "timestamp"
+
+        @Volatile
+        private var instance: NewsDatabaseHelper? = null
+
+        fun getInstance(context: Context): NewsDatabaseHelper {
+            return instance ?: synchronized(this) {
+                instance ?: NewsDatabaseHelper(context.applicationContext).also { instance = it }
+            }
+        }
     }
 
     override fun onCreate(db: SQLiteDatabase) {
-        // SQL query to create news table
         val createTableQuery = """
             CREATE TABLE IF NOT EXISTS $TABLE_NEWS (
                 $COLUMN_ID TEXT PRIMARY KEY,
@@ -127,53 +136,65 @@ class NewsDatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_
     }
 
     fun insertOrUpdateNews(news: NewsItem): Boolean {
-        val values = ContentValues().apply {
-            put(COLUMN_ID, news.id)
-            put(COLUMN_TITLE, news.title)
-            put(COLUMN_AUTHOR, news.author)
-            put(COLUMN_BODY, news.body)
-            put(COLUMN_TIMESTAMP, news.timestamp)
+        return try {
+            val values = ContentValues().apply {
+                put(COLUMN_ID, news.id)
+                put(COLUMN_TITLE, news.title)
+                put(COLUMN_AUTHOR, news.author)
+                put(COLUMN_BODY, news.body)
+                put(COLUMN_TIMESTAMP, news.timestamp)
+            }
+            writableDatabase.insertWithOnConflict(TABLE_NEWS, null, values, SQLiteDatabase.CONFLICT_REPLACE) != -1L
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
         }
-        val result = writableDatabase.insertWithOnConflict(TABLE_NEWS, null, values, SQLiteDatabase.CONFLICT_REPLACE)
-        return result != -1L
     }
 
     fun getAllNews(): List<NewsItem> {
         val newsList = mutableListOf<NewsItem>()
-        val cursor = readableDatabase.query(
-            TABLE_NEWS,
-            null,
-            null,
-            null,
-            null,
-            null,
-            "$COLUMN_TIMESTAMP DESC"
-        )
-        cursor.use { c ->
-            val idIndex = c.getColumnIndexOrThrow(COLUMN_ID)
-            val titleIndex = c.getColumnIndexOrThrow(COLUMN_TITLE)
-            val authorIndex = c.getColumnIndexOrThrow(COLUMN_AUTHOR)
-            val bodyIndex = c.getColumnIndexOrThrow(COLUMN_BODY)
-            val timestampIndex = c.getColumnIndexOrThrow(COLUMN_TIMESTAMP)
+        try {
+            val cursor = readableDatabase.query(
+                TABLE_NEWS,
+                null,
+                null,
+                null,
+                null,
+                null,
+                "$COLUMN_TIMESTAMP DESC"
+            )
+            cursor.use { c ->
+                val idIndex = c.getColumnIndexOrThrow(COLUMN_ID)
+                val titleIndex = c.getColumnIndexOrThrow(COLUMN_TITLE)
+                val authorIndex = c.getColumnIndexOrThrow(COLUMN_AUTHOR)
+                val bodyIndex = c.getColumnIndexOrThrow(COLUMN_BODY)
+                val timestampIndex = c.getColumnIndexOrThrow(COLUMN_TIMESTAMP)
 
-            while (c.moveToNext()) {
-                newsList.add(
-                    NewsItem(
-                        id = c.getString(idIndex),
-                        title = c.getString(titleIndex),
-                        author = c.getString(authorIndex),
-                        body = c.getString(bodyIndex) ?: "",
-                        timestamp = c.getLong(timestampIndex)
+                while (c.moveToNext()) {
+                    newsList.add(
+                        NewsItem(
+                            id = c.getString(idIndex),
+                            title = c.getString(titleIndex),
+                            author = c.getString(authorIndex),
+                            body = c.getString(bodyIndex) ?: "",
+                            timestamp = c.getLong(timestampIndex)
+                        )
                     )
-                )
+                }
             }
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
         return newsList
     }
 
     fun deleteNews(newsId: String): Boolean {
-        val result = writableDatabase.delete(TABLE_NEWS, "$COLUMN_ID = ?", arrayOf(newsId))
-        return result > 0
+        return try {
+            writableDatabase.delete(TABLE_NEWS, "$COLUMN_ID = ?", arrayOf(newsId)) > 0
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
+        }
     }
 }
 
@@ -183,8 +204,8 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         try {
-            getFirebaseDatabase().setPersistenceEnabled(true)
-        } catch (_: Exception) {}
+            getFirebaseDatabase()?.setPersistenceEnabled(true)
+        } catch (_: Throwable) {}
 
         createNotificationChannel(this)
 
@@ -216,11 +237,15 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-private fun getFirebaseDatabase(): FirebaseDatabase {
+private fun getFirebaseDatabase(): FirebaseDatabase? {
     return try {
         FirebaseDatabase.getInstance()
-    } catch (_: Exception) {
-        FirebaseDatabase.getInstance("https://news-app-a535d-default-rtdb.firebaseio.com/")
+    } catch (_: Throwable) {
+        try {
+            FirebaseDatabase.getInstance("https://news-app-a535d-default-rtdb.firebaseio.com/")
+        } catch (_: Throwable) {
+            null
+        }
     }
 }
 
@@ -250,15 +275,17 @@ private fun isUserLoggedIn(context: Context): Boolean {
 
 private fun createNotificationChannel(context: Context) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        val channel = NotificationChannel(
-            CHANNEL_ID,
-            CHANNEL_NAME,
-            NotificationManager.IMPORTANCE_DEFAULT
-        ).apply {
-            description = "Notifications for new news articles"
-        }
-        val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        notificationManager.createNotificationChannel(channel)
+        try {
+            val channel = NotificationChannel(
+                CHANNEL_ID,
+                CHANNEL_NAME,
+                NotificationManager.IMPORTANCE_DEFAULT
+            ).apply {
+                description = "Notifications for new news articles"
+            }
+            val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.createNotificationChannel(channel)
+        } catch (_: Throwable) {}
     }
 }
 
@@ -271,7 +298,7 @@ private fun showNewsNotification(context: Context, title: String, author: String
 
     try {
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setSmallIcon(android.R.drawable.ic_dialog_info)
             .setContentTitle("New News: $title")
             .setContentText("By: $author")
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
@@ -279,9 +306,7 @@ private fun showNewsNotification(context: Context, title: String, author: String
             .build()
 
         NotificationManagerCompat.from(context).notify((System.currentTimeMillis() % 10000).toInt(), notification)
-    } catch (e: Exception) {
-        e.printStackTrace()
-    }
+    } catch (_: Throwable) {}
 }
 
 @Composable
@@ -378,25 +403,38 @@ fun MainScreen(
     // Listen for incoming new news articles to trigger system notifications
     DisposableEffect(Unit) {
         val listenerAttachTime = System.currentTimeMillis()
-        val databaseRef = getFirebaseDatabase().getReference("news")
+        val firebaseDb = getFirebaseDatabase()
 
-        val childListener = object : ChildEventListener {
-            override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
-                val item = snapshot.getValue(NewsItem::class.java)
-                if (item != null && item.timestamp >= listenerAttachTime) {
-                    showNewsNotification(context, item.title, item.author)
+        if (firebaseDb != null) {
+            val databaseRef = firebaseDb.getReference("news")
+
+            val childListener = object : ChildEventListener {
+                override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
+                    try {
+                        val item = snapshot.getValue(NewsItem::class.java)
+                        if (item != null && item.timestamp >= listenerAttachTime) {
+                            showNewsNotification(context, item.title, item.author)
+                        }
+                    } catch (_: Throwable) {}
                 }
+
+                override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {}
+                override fun onChildRemoved(snapshot: DataSnapshot) {}
+                override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {}
+                override fun onCancelled(error: DatabaseError) {}
             }
 
-            override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {}
-            override fun onChildRemoved(snapshot: DataSnapshot) {}
-            override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {}
-            override fun onCancelled(error: DatabaseError) {}
-        }
+            try {
+                databaseRef.addChildEventListener(childListener)
+            } catch (_: Throwable) {}
 
-        databaseRef.addChildEventListener(childListener)
-        onDispose {
-            databaseRef.removeEventListener(childListener)
+            onDispose {
+                try {
+                    databaseRef.removeEventListener(childListener)
+                } catch (_: Throwable) {}
+            }
+        } else {
+            onDispose { }
         }
     }
 
@@ -473,36 +511,51 @@ fun NewsScreen(
     onLogout: () -> Unit
 ) {
     val context = LocalContext.current
-    val dbHelper = remember { NewsDatabaseHelper(context) }
+    val dbHelper = remember { NewsDatabaseHelper.getInstance(context) }
     var searchQuery by remember { mutableStateOf("") }
     var allNews by remember { mutableStateOf(dbHelper.getAllNews()) }
     var isLoading by remember { mutableStateOf(false) }
 
     // Sync in real-time with Firebase Realtime Database and cache into local SQL database
     DisposableEffect(Unit) {
-        val databaseRef = getFirebaseDatabase().getReference("news")
-        val listener = object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                val newsList = mutableListOf<NewsItem>()
-                for (child in snapshot.children) {
-                    val item = child.getValue(NewsItem::class.java)
-                    if (item != null) {
-                        newsList.add(item)
-                        dbHelper.insertOrUpdateNews(item)
-                    }
+        val firebaseDb = getFirebaseDatabase()
+        if (firebaseDb != null) {
+            val databaseRef = firebaseDb.getReference("news")
+            val listener = object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    try {
+                        val newsList = mutableListOf<NewsItem>()
+                        for (child in snapshot.children) {
+                            val item = child.getValue(NewsItem::class.java)
+                            if (item != null) {
+                                newsList.add(item)
+                                dbHelper.insertOrUpdateNews(item)
+                            }
+                        }
+                        allNews = dbHelper.getAllNews()
+                    } catch (_: Throwable) {}
+                    isLoading = false
                 }
-                allNews = dbHelper.getAllNews()
+
+                override fun onCancelled(error: DatabaseError) {
+                    isLoading = false
+                }
+            }
+
+            try {
+                databaseRef.addValueEventListener(listener)
+            } catch (_: Throwable) {
                 isLoading = false
             }
 
-            override fun onCancelled(error: DatabaseError) {
-                isLoading = false
+            onDispose {
+                try {
+                    databaseRef.removeEventListener(listener)
+                } catch (_: Throwable) {}
             }
-        }
-        databaseRef.addValueEventListener(listener)
-
-        onDispose {
-            databaseRef.removeEventListener(listener)
+        } else {
+            isLoading = false
+            onDispose { }
         }
     }
 
@@ -590,7 +643,7 @@ fun CreateNewsScreen(
     onNewsSaved: () -> Unit
 ) {
     val context = LocalContext.current
-    val dbHelper = remember { NewsDatabaseHelper(context) }
+    val dbHelper = remember { NewsDatabaseHelper.getInstance(context) }
     var title by remember { mutableStateOf("") }
     var author by remember { mutableStateOf(currentUserName) }
     var newsBody by remember { mutableStateOf("") }
@@ -663,10 +716,10 @@ fun CreateNewsScreen(
 
                     // 2. Sync to Firebase Realtime Database
                     try {
-                        getFirebaseDatabase().getReference("news")
-                            .child(newsId)
-                            .setValue(newsItem)
-                    } catch (_: Exception) {}
+                        getFirebaseDatabase()?.getReference("news")
+                            ?.child(newsId)
+                            ?.setValue(newsItem)
+                    } catch (_: Throwable) {}
 
                     isSaving = false
                     Toast.makeText(context, "News saved successfully!", Toast.LENGTH_SHORT).show()
@@ -699,7 +752,7 @@ fun NewsCard(
     onDeleteSuccess: () -> Unit = {}
 ) {
     val context = LocalContext.current
-    val dbHelper = remember { NewsDatabaseHelper(context) }
+    val dbHelper = remember { NewsDatabaseHelper.getInstance(context) }
     var showDialog by remember { mutableStateOf(false) }
     var showDeleteConfirm by remember { mutableStateOf(false) }
 
@@ -711,10 +764,10 @@ fun NewsCard(
 
             // Delete remotely from Firebase
             try {
-                getFirebaseDatabase().getReference("news")
-                    .child(news.id)
-                    .removeValue()
-            } catch (_: Exception) {}
+                getFirebaseDatabase()?.getReference("news")
+                    ?.child(news.id)
+                    ?.removeValue()
+            } catch (_: Throwable) {}
 
             Toast.makeText(context, "News deleted!", Toast.LENGTH_SHORT).show()
         }
