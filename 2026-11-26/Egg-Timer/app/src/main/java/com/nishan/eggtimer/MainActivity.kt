@@ -66,7 +66,10 @@ class MainActivity : ComponentActivity() {
                     ) {
                         composable("home") {
                             Column(
-                                modifier = Modifier.fillMaxSize(),
+                                modifier = Modifier.fillMaxSize()
+                                    .clickable {
+                                        navController.navigate("details/300000")
+                                    },
                                 horizontalAlignment = Alignment.CenterHorizontally,
                                 verticalArrangement = Arrangement.Center
                             ) {
@@ -84,14 +87,14 @@ class MainActivity : ComponentActivity() {
                                             contentScale = ContentScale.Fit,
                                             modifier = Modifier
                                                 .size(150.dp)
-                                                .clickable {
-                                                    navController.navigate("details/300000")
-                                                }
                                         )
                                         Text("Very Soft Boiled")
                                     }
                                     Column(
-                                        modifier = Modifier.size(170.dp),
+                                        modifier = Modifier.size(170.dp)
+                                            .clickable {
+                                            navController.navigate("details/360000")
+                                        },
                                         horizontalAlignment = Alignment.CenterHorizontally,
                                         verticalArrangement = Arrangement.Center
                                     ) {
@@ -103,9 +106,7 @@ class MainActivity : ComponentActivity() {
                                             contentScale = ContentScale.Fit,
                                             modifier = Modifier
                                                 .size(150.dp)
-                                                .clickable {
-                                                    navController.navigate("details/360000")
-                                                }
+
                                         )
                                         Text("Soft Boiled")
                                     }
@@ -113,7 +114,10 @@ class MainActivity : ComponentActivity() {
 
                                 Row {
                                     Column(
-                                        modifier = Modifier.size(170.dp),
+                                        modifier = Modifier.size(170.dp)
+                                            .clickable {
+                                                navController.navigate("details/540000")
+                                            },
                                         horizontalAlignment = Alignment.CenterHorizontally,
                                         verticalArrangement = Arrangement.Center
                                     ) {
@@ -125,14 +129,14 @@ class MainActivity : ComponentActivity() {
                                             contentScale = ContentScale.Fit,
                                             modifier = Modifier
                                                 .size(150.dp)
-                                                .clickable {
-                                                    navController.navigate("details/540000")
-                                                }
                                         )
                                         Text("Medium Boiled")
                                     }
                                     Column(
-                                        modifier = Modifier.size(170.dp),
+                                        modifier = Modifier.size(170.dp)
+                                            .clickable {
+                                                navController.navigate("details/720000")
+                                            },
                                         horizontalAlignment = Alignment.CenterHorizontally,
                                         verticalArrangement = Arrangement.Center
                                     ) {
@@ -144,9 +148,6 @@ class MainActivity : ComponentActivity() {
                                             contentScale = ContentScale.Fit,
                                             modifier = Modifier
                                                 .size(150.dp)
-                                                .clickable {
-                                                    navController.navigate("details/720000")
-                                                }
                                         )
                                         Text("Hard Boiled")
                                     }
