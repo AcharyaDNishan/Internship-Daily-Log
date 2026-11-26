@@ -1,0 +1,60 @@
+
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="200dp"
+    android:height="240dp"
+    android:viewportWidth="200"
+    android:viewportHeight="240">
+
+    <!-- Egg White Base -->
+    <path
+        android:pathData="M100,25 C148,25 176,85 176,142 C176,188 144,215 100,215 C56,215 24,188 24,142 C24,85 52,25 100,25 Z"
+        android:strokeWidth="2.5"
+        android:strokeColor="#CBD5E1">
+
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:centerX="85"
+                android:centerY="105"
+                android:gradientRadius="125"
+                android:type="radial">
+                <item android:color="#FFFFFF" android:offset="0.0" />
+                <item android:color="#F8FAFC" android:offset="0.8" />
+                <item android:color="#E2E8F0" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Fully Set Yolk -->
+    <path
+        android:pathData="M64,146 A36,36 0 1,0 136,146 A36,36 0 1,0 64,146 Z"
+        android:strokeWidth="1.5"
+        android:strokeColor="#EAB308">
+
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:centerX="93"
+                android:centerY="135"
+                android:gradientRadius="45"
+                android:type="radial">
+                <item android:color="#FEF08A" android:offset="0.0" />
+                <item android:color="#FDE047" android:offset="0.7" />
+                <item android:color="#FACC15" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Crumbly / Matte Texture Dots -->
+    <path
+        android:fillAlpha="0.55"
+        android:fillColor="#CA8A04"
+        android:pathData="
+            M86,138 A2,2 0 1,0 90,138 A2,2 0 1,0 86,138 Z
+            M106.5,134 A1.5,1.5 0 1,0 109.5,134 A1.5,1.5 0 1,0 106.5,134 Z
+            M112.8,150 A2.2,2.2 0 1,0 117.2,150 A2.2,2.2 0 1,0 112.8,150 Z
+            M90.2,156 A1.8,1.8 0 1,0 93.8,156 A1.8,1.8 0 1,0 90.2,156 Z
+            M100.5,145 A1.5,1.5 0 1,0 103.5,145 A1.5,1.5 0 1,0 100.5,145 Z
+            M80.8,148 A1.2,1.2 0 1,0 83.2,148 A1.2,1.2 0 1,0 80.8,148 Z
+            M104.5,162 A1.5,1.5 0 1,0 107.5,162 A1.5,1.5 0 1,0 104.5,162 Z" />
+
+</vector>

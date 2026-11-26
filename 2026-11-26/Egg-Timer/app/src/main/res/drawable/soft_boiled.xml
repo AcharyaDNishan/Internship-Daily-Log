@@ -1,0 +1,59 @@
+
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="200dp"
+    android:height="240dp"
+    android:viewportWidth="200"
+    android:viewportHeight="240">
+
+    <!-- Egg White Base -->
+    <path
+        android:pathData="M100,25 C148,25 176,85 176,142 C176,188 144,215 100,215 C56,215 24,188 24,142 C24,85 52,25 100,25 Z"
+        android:strokeWidth="2.5"
+        android:strokeColor="#CBD5E1">
+
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:centerX="85"
+                android:centerY="105"
+                android:gradientRadius="125"
+                android:type="radial">
+                <item android:color="#FFFFFF" android:offset="0.0" />
+                <item android:color="#F8FAFC" android:offset="0.8" />
+                <item android:color="#E2E8F0" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Jammy Yolk -->
+    <path
+        android:pathData="M64,146 A36,36 0 1,0 136,146 A36,36 0 1,0 64,146 Z">
+
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:centerX="93"
+                android:centerY="135"
+                android:gradientRadius="45"
+                android:type="radial">
+                <item android:color="#FFB703" android:offset="0.0" />
+                <item android:color="#F97316" android:offset="0.55" />
+                <item android:color="#EA580C" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Gooey Center Core -->
+    <path
+        android:fillAlpha="0.55"
+        android:fillColor="#EA580C"
+        android:pathData="M79,146 A21,21 0 1,0 121,146 A21,21 0 1,0 79,146 Z" />
+
+    <!-- Jammy Gloss Highlight -->
+    <path
+        android:pathData="M82,132 A20,20 0 0,1 104,124"
+        android:strokeAlpha="0.5"
+        android:strokeColor="#FFFFFF"
+        android:strokeLineCap="round"
+        android:strokeWidth="3" />
+
+</vector>
