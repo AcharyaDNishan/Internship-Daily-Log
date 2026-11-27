@@ -13,6 +13,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -29,10 +30,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -221,9 +227,36 @@ fun TimerScreen(
         minutes,
         seconds
     )
-    val tl=60
-    val centerX = size.width / 2
-    val centerY = size.height / 2
+    val angles = remember { mutableStateListOf<Float>(90F) }
+    val strokeWidth = 5.dp
+    val x1 = 0F
+    val x2 = 100F
+    val modifier = Modifier
+    val ts=60
+    LaunchedEffect(ts) {
+        while (true) {
+            angles.clear()
+            var currentAngle = ts.toFloat()
+            repeat(60) {
+                angles.add(currentAngle)
+                delay(1000)
+                currentAngle = (currentAngle + 6F) % 360F
+            }
+        }
+    }
+    Canvas(modifier = modifier.fillMaxSize()) {
+        for (angle in angles) {
+            rotate(degrees = angle) {
+                drawLine(
+                    color = Color.Blue,
+                    start = Offset(x = x1, y = size.height / 2f),
+                    end = Offset(x = x2, y = size.height / 2f),
+                    strokeWidth = strokeWidth.toPx(),
+                    cap = StrokeCap.Round
+                )
+            }
+        }
+    }
     Column(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
