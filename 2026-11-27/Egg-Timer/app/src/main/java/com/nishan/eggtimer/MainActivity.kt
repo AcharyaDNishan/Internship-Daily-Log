@@ -72,18 +72,19 @@ class MainActivity : ComponentActivity() {
                     ) {
                         composable("home") {
                             Column(
-                                modifier = Modifier.fillMaxSize()
-                                    .clickable {
-                                        navController.navigate("details/300000")
-                                    },
+                                modifier = Modifier.fillMaxSize(),
                                 horizontalAlignment = Alignment.CenterHorizontally,
                                 verticalArrangement = Arrangement.Center
                             ) {
                                 Row {
                                     Column(
-                                        modifier = Modifier.size(170.dp),
+                                        modifier = Modifier.size(170.dp)
+                                            .clickable {
+                                                navController.navigate("details/300000")
+                                            },
                                         horizontalAlignment = Alignment.CenterHorizontally,
                                         verticalArrangement = Arrangement.Center
+
                                     ) {
                                         Image(
                                             painter = painterResource(
@@ -233,94 +234,96 @@ fun TimerScreen(
     val x2 = 100F
     val modifier = Modifier
     val ts=60
-    LaunchedEffect(ts) {
-        while (true) {
-            angles.clear()
-            var currentAngle = ts.toFloat()
-            repeat(60) {
-                angles.add(currentAngle)
-                delay(1000)
-                currentAngle = (currentAngle + 6F) % 360F
+    if (msLeft > 0) {
+        LaunchedEffect(ts) {
+            while (true) {
+                angles.clear()
+                var currentAngle = ts.toFloat()
+                repeat(60) {
+                    angles.add(currentAngle)
+                    delay(1000)
+                    currentAngle = (currentAngle + 6F) % 360F
+                }
             }
         }
-    }
-    Canvas(modifier = modifier.fillMaxSize()) {
-        for (angle in angles) {
-            rotate(degrees = angle) {
-                drawLine(
-                    color = Color.Blue,
-                    start = Offset(x = x1, y = size.height / 2f),
-                    end = Offset(x = x2, y = size.height / 2f),
-                    strokeWidth = strokeWidth.toPx(),
-                    cap = StrokeCap.Round
-                )
+        Canvas(modifier = modifier.fillMaxSize()) {
+            for (angle in angles) {
+                rotate(degrees = angle) {
+                    drawLine(
+                        color = Color.Blue,
+                        start = Offset(x = x1, y = size.height / 2f),
+                        end = Offset(x = x2, y = size.height / 2f),
+                        strokeWidth = strokeWidth.toPx(),
+                        cap = StrokeCap.Round
+                    )
+                }
             }
         }
-    }
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text(
-            text = if (msLeft > 0L) {
-                formattedTime
-            } else {
-                "Egg is ready!"
-            },
-            style = MaterialTheme.typography.displayLarge
-        )
-        Button(
-            onClick = onBack,
-            modifier = Modifier.padding(top = 24.dp)
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
-            Text("Cancel / Back")
+            Text(
+                text = if (msLeft > 0L) {
+                    formattedTime
+                } else {
+                    "Egg is ready!"
+                },
+                style = MaterialTheme.typography.displayLarge
+            )
+            Button(
+                onClick = onBack,
+                modifier = Modifier.padding(top = 24.dp)
+            ) {
+                Text("Cancel / Back")
+            }
         }
     }
 }
-
-fun createNotificationChannel(context: Context) {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        val channel = NotificationChannel(
-            "egg_timer_channel",
-            "Egg Timer Alerts",
-            NotificationManager.IMPORTANCE_HIGH
-        ).apply {
-            description = "Alerts when your boiled egg is ready"
+    fun createNotificationChannel(context: Context) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                "egg_timer_channel",
+                "Egg Timer Alerts",
+                NotificationManager.IMPORTANCE_HIGH
+            ).apply {
+                description = "Alerts when your boiled egg is ready"
+            }
+            val manager = context.getSystemService(
+                Context.NOTIFICATION_SERVICE
+            ) as NotificationManager
+            manager.createNotificationChannel(channel)
         }
-        val manager = context.getSystemService(
-            Context.NOTIFICATION_SERVICE
-        ) as NotificationManager
-        manager.createNotificationChannel(channel)
     }
-}
 
-fun sendEggReadyNotification(context: Context) {
-    if (
-        Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
-        ContextCompat.checkSelfPermission(
+    fun sendEggReadyNotification(context: Context) {
+        if (
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            return
+        }
+        val notification = NotificationCompat.Builder(
             context,
-            Manifest.permission.POST_NOTIFICATIONS
-        ) != PackageManager.PERMISSION_GRANTED
-    ) {
-        return
-    }
-    val notification = NotificationCompat.Builder(
-        context,
-        "egg_timer_channel"
-    )
-        .setSmallIcon(android.R.drawable.ic_dialog_info)
-        .setContentTitle("Egg Timer")
-        .setContentText("Time's up! Your egg is ready!")
-        .setPriority(NotificationCompat.PRIORITY_HIGH)
-        .setAutoCancel(true)
-        .build()
-    try {
-        NotificationManagerCompat.from(context).notify(
-            1001,
-            notification
+            "egg_timer_channel"
         )
-    } catch (e: SecurityException) {
-        e.printStackTrace()
+            .setSmallIcon(android.R.drawable.ic_dialog_info)
+            .setContentTitle("Egg Timer")
+            .setContentText("Time's up! Your egg is ready!")
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setAutoCancel(true)
+            .build()
+        try {
+            NotificationManagerCompat.from(context).notify(
+                1001,
+                notification
+            )
+        } catch (e: SecurityException) {
+            e.printStackTrace()
+        }
     }
-}
+
