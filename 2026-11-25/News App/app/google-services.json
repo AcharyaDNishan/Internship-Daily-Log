@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "420622397",
+    "firebase_url": "https://news-app-a535d-default-rtdb.firebaseio.com",
+    "project_id": "news-app-a535d",
+    "storage_bucket": "news-app-a535d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:420622397:android:564dd9f3352fa6dbf23a54",
+        "android_client_info": {
+          "package_name": "com.nishan.newsapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAjsKskWxYD8LYe-FxteYEf-tM_lTGSuc8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

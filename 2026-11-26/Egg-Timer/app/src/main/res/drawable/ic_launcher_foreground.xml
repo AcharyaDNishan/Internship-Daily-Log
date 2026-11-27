@@ -1,0 +1,99 @@
+
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="50dp"
+    android:height="50dp"
+    android:viewportWidth="200"
+    android:viewportHeight="240">
+
+    <!-- Egg White Base -->
+    <path
+        android:pathData="M100,25 C148,25 176,85 176,142 C176,188 144,215 100,215 C56,215 24,188 24,142 C24,85 52,25 100,25 Z"
+        android:strokeWidth="2.5"
+        android:strokeColor="#CBD5E1">
+
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:centerX="85"
+                android:centerY="105"
+                android:gradientRadius="125"
+                android:type="radial">
+                <item android:color="#FFFFFF" android:offset="0.0" />
+                <item android:color="#F8FAFC" android:offset="0.8" />
+                <item android:color="#E2E8F0" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Jammy Yolk -->
+    <path
+        android:pathData="M64,146 A36,36 0 1,0 136,146 A36,36 0 1,0 64,146 Z">
+
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:centerX="93"
+                android:centerY="135"
+                android:gradientRadius="45"
+                android:type="radial">
+                <item android:color="#FFB703" android:offset="0.0" />
+                <item android:color="#F97316" android:offset="0.55" />
+                <item android:color="#EA580C" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Gooey Center Core -->
+    <path
+        android:fillAlpha="0.55"
+        android:fillColor="#EA580C"
+        android:pathData="M79,146 A21,21 0 1,0 121,146 A21,21 0 1,0 79,146 Z" />
+
+    <!-- Jammy Gloss Highlight -->
+    <path
+        android:pathData="M82,132 A20,20 0 0,1 104,124"
+        android:strokeAlpha="0.5"
+        android:strokeColor="#FFFFFF"
+        android:strokeLineCap="round"
+        android:strokeWidth="3" />
+
+    <!-- Left Eye -->
+    <path
+        android:fillColor="#422006"
+        android:pathData="M85,140 A4,4 0 1,0 93,140 A4,4 0 1,0 85,140 Z" />
+
+    <!-- Right Eye -->
+    <path
+        android:fillColor="#422006"
+        android:pathData="M107,140 A4,4 0 1,0 115,140 A4,4 0 1,0 107,140 Z" />
+
+    <!-- Left Eye Shine -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M87,138 A1.2,1.2 0 1,0 89.4,138 A1.2,1.2 0 1,0 87,138 Z" />
+
+    <!-- Right Eye Shine -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M109,138 A1.2,1.2 0 1,0 111.4,138 A1.2,1.2 0 1,0 109,138 Z" />
+
+    <!-- Left Blush -->
+    <path
+        android:fillColor="#FFB4B4"
+        android:fillAlpha="0.8"
+        android:pathData="M77,148 Q82,145 86,149 Q83,153 78,151 Z" />
+
+    <!-- Right Blush -->
+    <path
+        android:fillColor="#FFB4B4"
+        android:fillAlpha="0.8"
+        android:pathData="M114,149 Q118,145 123,148 Q122,153 116,151 Z" />
+
+    <!-- Cute Smile -->
+    <path
+        android:pathData="M91,149 Q100,161 109,149"
+        android:strokeColor="#422006"
+        android:strokeWidth="2.5"
+        android:strokeLineCap="round"
+        android:fillColor="@android:color/transparent" />
+
+</vector>

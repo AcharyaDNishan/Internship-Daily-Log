@@ -1,0 +1,70 @@
+
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="200dp"
+    android:height="240dp"
+    android:viewportWidth="200"
+    android:viewportHeight="240">
+
+    <!-- Egg White Base -->
+    <path
+        android:pathData="M100,25 C148,25 176,85 176,142 C176,188 144,215 100,215 C56,215 24,188 24,142 C24,85 52,25 100,25 Z"
+        android:strokeWidth="2.5"
+        android:strokeColor="#CBD5E1">
+
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:centerX="85"
+                android:centerY="105"
+                android:gradientRadius="125"
+                android:type="radial">
+                <item android:color="#FFFFFF" android:offset="0.0" />
+                <item android:color="#F8FAFC" android:offset="0.8" />
+                <item android:color="#E2E8F0" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Soft Inner White Ring -->
+    <path
+        android:fillAlpha="0.6"
+        android:fillColor="#F1F5F9"
+        android:pathData="M54,144 A46,48 0 1,0 146,144 A46,48 0 1,0 54,144 Z" />
+
+    <!-- Liquid Yolk -->
+    <path
+        android:pathData="M64,146 A36,36 0 1,0 136,146 A36,36 0 1,0 64,146 Z">
+
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:centerX="93"
+                android:centerY="135"
+                android:gradientRadius="45"
+                android:type="radial">
+                <item android:color="#FF7B00" android:offset="0.0" />
+                <item android:color="#EA580C" android:offset="0.65" />
+                <item android:color="#C2410C" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Runny Drip Effect -->
+    <path
+        android:fillColor="#EA580C"
+        android:pathData="M82,172 C82,194 94,198 96,180 C98,192 110,190 110,175 Z" />
+
+    <!-- Glossy Liquid Highlight -->
+    <path
+        android:pathData="M80,132 A22,22 0 0,1 106,122"
+        android:strokeAlpha="0.75"
+        android:strokeColor="#FFFFFF"
+        android:strokeLineCap="round"
+        android:strokeWidth="4" />
+
+    <!-- Small Glossy Highlight -->
+    <path
+        android:fillAlpha="0.75"
+        android:fillColor="#FFFFFF"
+        android:pathData="M75.5,140 A2.5,2.5 0 1,0 80.5,140 A2.5,2.5 0 1,0 75.5,140 Z" />
+
+</vector>
